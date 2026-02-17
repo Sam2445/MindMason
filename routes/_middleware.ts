@@ -1,6 +1,19 @@
 import { FreshContext } from "$fresh/server.ts";
+import { getCookies } from "$std/http/cookie.ts";
 
 export async function handler(req: Request, ctx: FreshContext) {
+  // Protect /admin route
+  const url = new URL(req.url);
+  if (url.pathname.startsWith("/admin")) {
+    const cookies = getCookies(req.headers);
+    // Simple token check
+    if (cookies.auth !== "admin_token_secure") {
+      return new Response("", {
+        status: 303,
+        headers: { Location: "/login" },
+      });
+    }
+  }
   const start = performance.now();
   const resp = await ctx.next();
   const ms = performance.now() - start;

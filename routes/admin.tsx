@@ -1,12 +1,26 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
-import { addQuestion } from "../../utils/db.ts";
+import { addQuestion, clearQuestions, getQuestions, type Question } from "../utils/db.ts";
 
-export const handler: Handlers = {
+interface Data {
+  questions: Question[];
+}
+
+export const handler: Handlers<Data> = {
+  async GET(_req, ctx) {
+    const questions = await getQuestions();
+    return ctx.render({ questions });
+  },
   async POST(req, ctx) {
     const contentType = req.headers.get("content-type") || "";
+    const form = await req.formData();
+    const action = form.get("action")?.toString();
+
+    if (action === "clear") {
+        await clearQuestions();
+        return new Response("", { status: 303, headers: { Location: "/admin" } });
+    }
 
     if (contentType.includes("multipart/form-data")) {
-        const form = await req.formData();
         const csvFile = form.get("csvFile");
         
         if (csvFile && csvFile instanceof File) {
@@ -19,8 +33,6 @@ export const handler: Handlers = {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // fast-csv or similar would be better, but simple split for now
-                // Assuming no commas in text for MVP
                 const cols = line.split(",");
                 if (cols.length < 7) continue;
 
@@ -70,13 +82,23 @@ export const handler: Handlers = {
   },
 };
 
-export default function AdminPage() {
+export default function AdminPage({ data }: PageProps<Data>) {
+  const { questions } = data;
   return (
     <div class="min-h-screen bg-gray-900 text-white p-8">
       <div class="max-w-4xl mx-auto space-y-8">
-        <h1 class="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-          Admin Dashboard
-        </h1>
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+              Admin Dashboard
+            </h1>
+            <form method="POST">
+                <input type="hidden" name="action" value="clear" />
+                <button type="submit" class="px-4 py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/50 rounded-lg text-sm font-bold transition-colors"
+                    onClick={(e) => { if(!confirm('Are you sure you want to delete ALL questions?')) e.preventDefault() }}>
+                    Reset Database
+                </button>
+            </form>
+        </div>
 
         {/* CSV Upload Section */}
         <div class="bg-gray-800 p-8 rounded-xl border border-gray-700 shadow-xl">
@@ -133,6 +155,38 @@ export default function AdminPage() {
         
         <div class="mt-8 text-center">
             <a href="/" class="text-gray-400 hover:text-white transition-colors">Back to Home</a>
+        </div>
+
+        {/* Questions List */}
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-6 text-emerald-400">Database Content ({questions.length} Questions)</h2>
+            <div class="overflow-x-auto bg-gray-800 rounded-xl border border-gray-700 shadow-xl">
+                <table class="w-full text-left text-gray-400">
+                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-4">Category</th>
+                            <th class="px-6 py-4">Question</th>
+                            <th class="px-6 py-4">Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        {questions.map((q) => (
+                            <tr key={q.id} class="hover:bg-gray-700/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-blue-400 uppercase">{q.category}</td>
+                                <td class="px-6 py-4 text-gray-300">{q.text}</td>
+                                <td class="px-6 py-4 text-emerald-400 font-medium">
+                                    {q.options[q.correctIndex]}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                 {questions.length === 0 && (
+                    <div class="p-8 text-center text-gray-500">
+                        No questions in the database yet.
+                    </div>
+                )}
+            </div>
         </div>
       </div>
     </div>

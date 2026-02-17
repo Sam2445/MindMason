@@ -1,4 +1,5 @@
-import { useState } from "preact/hooks";
+
+import { useEffect, useState } from "preact/hooks";
 import Timer from "./Timer.tsx";
 import QuestionPalette from "./QuestionPalette.tsx";
 import { type Question } from "../utils/db.ts";
@@ -11,18 +12,86 @@ interface QuizEngineProps {
 export default function QuizEngine({ questions, category }: QuizEngineProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [marked, setMarked] = useState<Record<number, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<{correct: number, wrong: number, score: number} | null>(null);
+  
+  // Persistence state
+  const [hydrated, setHydrated] = useState(false);
+  const [initialTime, setInitialTime] = useState(60 * 10); // Default 10 mins
 
   // Derive current question
   const currentQuestion = questions[currentIdx];
   const isLast = currentIdx === questions.length - 1;
+
+  // Restore state from LocalStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+       const key = `quiz_session_${category}`;
+       try {
+           const stored = localStorage.getItem(key);
+           if (stored) {
+              const data = JSON.parse(stored);
+              // Restore answers and marks
+              if (data.answers) setAnswers(data.answers);
+              if (data.marked) setMarked(data.marked);
+              
+              // Calculate remaining time
+              if (data.startTime) {
+                  const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
+                  const remaining = (60 * 10) - elapsed;
+                  if (remaining <= 0) {
+                     // Time already passed
+                     setInitialTime(0);
+                     // We should auto-submit here, but let's wait for hydration to complete
+                     // handleSubmit() will be called by Timer or effect
+                  } else {
+                     setInitialTime(remaining);
+                  }
+              }
+           } else {
+              // Start new session
+              localStorage.setItem(key, JSON.stringify({
+                 startTime: Date.now(),
+                 answers: {},
+                 marked: {}
+              }));
+           }
+       } catch (e) {
+           console.error("Failed to restore session", e);
+       }
+       setHydrated(true);
+    }
+  }, []);
+
+  // Save state to LocalStorage
+  useEffect(() => {
+     if (typeof window !== "undefined" && hydrated && !submitted) {
+        const key = `quiz_session_${category}`;
+        const existingStr = localStorage.getItem(key);
+        const existing = existingStr ? JSON.parse(existingStr) : { startTime: Date.now() };
+        
+        localStorage.setItem(key, JSON.stringify({
+           ...existing,
+           answers,
+           marked
+        }));
+     }
+  }, [answers, marked, hydrated, submitted]);
 
   const handleSelectOption = (optionIndex: number) => {
     if (submitted) return;
     setAnswers((prev) => ({
       ...prev,
       [currentIdx]: optionIndex,
+    }));
+  };
+
+  const toggleMarked = () => {
+    if (submitted) return;
+    setMarked((prev) => ({
+        ...prev,
+        [currentIdx]: !prev[currentIdx]
     }));
   };
 
@@ -44,29 +113,40 @@ export default function QuizEngine({ questions, category }: QuizEngineProps) {
               else wrong++;
           }
       });
-      return { correct, wrong, score: correct }; // Simple 1 point per question
+      return { correct, wrong, score: correct };
   };
 
   const handleSubmit = async () => {
     if (submitted) return;
     setSubmitted(true);
     
+    // Clear session
+    if (typeof window !== "undefined") {
+        localStorage.removeItem(`quiz_session_${category}`);
+    }
+
     const res = calculateResults();
     setResult(res);
 
     // Send to API
     try {
+        let userName = "guest-user";
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("user_name");
+            if (stored) userName = stored;
+        }
+
         await fetch("/api/submit-score", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 id: crypto.randomUUID(),
-                userId: "guest-user", // Placeholder
+                userId: userName,
                 category,
                 score: res.score,
                 totalQuestions: questions.length,
                 correctAnswers: res.correct,
-                timeTaken: 0, // todo: track actual time
+                timeTaken: (60 * 10) - initialTime, // Approximate
                 timestamp: new Date().toISOString()
             })
         });
@@ -75,6 +155,11 @@ export default function QuizEngine({ questions, category }: QuizEngineProps) {
     }
   };
 
+  // Wait for hydration to avoid mismatch and correct timer init
+  if (!hydrated && typeof window !== "undefined") {
+      return <div class="p-8 text-center text-gray-400">Loading session...</div>;
+  }
+  
   if (!currentQuestion) return <div>Loading...</div>;
 
   if (submitted && result) {
@@ -160,30 +245,38 @@ export default function QuizEngine({ questions, category }: QuizEngineProps) {
                 <h2 class="text-xl font-bold text-gray-100 uppercase tracking-wider">{category} Mock Test</h2>
                 <span class="text-sm text-gray-400">Question {currentIdx + 1} of {questions.length}</span>
              </div>
-             <Timer initialSeconds={60 * 10} onTimeUp={handleSubmit} /> 
+             {/* Key on Timer forces remount if initialTime changes */}
+             <Timer key={initialTime} initialSeconds={initialTime} onTimeUp={handleSubmit} /> 
         </div>
 
         {/* Question Card */}
         <div class="p-8 bg-gray-800 border border-gray-700 rounded-2xl shadow-xl min-h-[400px] flex flex-col justify-between relative overflow-hidden group">
-            {/* Glow effect */}
-             <div class="absolute -top-20 -right-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-1000"></div>
-
              <div>
-                <h3 class="text-2xl font-serif font-medium text-gray-100 mb-8 leading-relaxed">
-                  {currentQuestion.text}
-                </h3>
+                <div class="flex justify-between items-start mb-6">
+                   <h3 class="text-2xl font-serif font-medium text-gray-100 leading-relaxed pr-8">
+                     {currentQuestion.text}
+                   </h3>
+                   <button 
+                      onClick={toggleMarked}
+                      class={`p-2 rounded-lg transition-colors ${marked[currentIdx] ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/50' : 'text-gray-500 hover:bg-gray-700'}`}
+                      title="Mark for Review"
+                   >
+                     {/* Bookmark Icon */}
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill={marked[currentIdx] ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                     </svg>
+                   </button>
+                </div>
 
                 <div class="space-y-3">
                   {currentQuestion.options.map((opt, idx) => {
                     const isSelected = answers[currentIdx] === idx;
-                    const isCorrect = idx === currentQuestion.correctIndex; 
                     
                     let btnClass = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center group/btn ";
                     
                     if (submitted) {
-                        if (isCorrect) btnClass += "bg-emerald-900/30 border-emerald-500 text-emerald-200";
-                        else if (isSelected && !isCorrect) btnClass += "bg-red-900/30 border-red-500 text-red-200";
-                        else btnClass += "border-gray-700 bg-gray-800/50 opacity-50";
+                       // ... disabled style
+                       btnClass += "border-gray-700 bg-gray-800/50 opacity-50";
                     } else {
                         if (isSelected) btnClass += "bg-blue-600 border-blue-500 text-white shadow-lg ring-2 ring-blue-500/50";
                         else btnClass += "bg-gray-700/30 border-gray-600 hover:bg-gray-700 hover:border-gray-500 text-gray-300";
@@ -249,15 +342,19 @@ export default function QuizEngine({ questions, category }: QuizEngineProps) {
                totalQuestions={questions.length} 
                currentIndex={currentIdx} 
                answers={answers} 
+               marked={marked}
                onSelect={setCurrentIdx} 
              />
              
-             <div class="mt-6 space-y-2 text-xs text-gray-400">
+             <div class="mt-6 col-span-2 text-xs text-gray-400 space-y-2">
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 rounded bg-blue-600 border border-blue-400"></div> Current
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 rounded bg-emerald-600/20 border border-emerald-500/50"></div> Answered
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded bg-yellow-600/20 border border-yellow-500/50"></div> Marked for Review
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 rounded bg-gray-700 border border-gray-600"></div> Unvisited

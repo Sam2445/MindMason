@@ -1,4 +1,6 @@
+
 import { type PageProps } from "$fresh/server.ts";
+import UserIdentity from "../islands/UserIdentity.tsx";
 
 export default function App({ Component }: PageProps) {
   return (
@@ -21,16 +23,21 @@ export default function App({ Component }: PageProps) {
         `}</style>
       </head>
       <body class="bg-gray-900 text-white min-h-screen flex flex-col">
-        <nav class="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
+        {/* User Identity Island for global profile handling */}
+        <UserIdentity />
+        
+        <nav class="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-40">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
               <div class="flex items-center">
-                <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                <a href="/" class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
                   MindMason
                 </a>
                 <div class="ml-10 flex items-baseline space-x-4">
                   <a href="/" class="hover:bg-gray-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
                   <a href="/history" class="hover:bg-gray-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">History</a>
+                  <a href="/leaderboard" class="hover:bg-gray-800 px-3 py-2 rounded-md text-sm font-medium transition-colors text-yellow-400">Leaderboard</a>
+                  <a href="/admin" class="hover:bg-gray-800 px-3 py-2 rounded-md text-sm font-medium transition-colors text-red-400">Admin</a>
                 </div>
               </div>
             </div>

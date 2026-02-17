@@ -1,6 +1,6 @@
 import { PageProps, Handlers } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { kv, type ExamResult } from "../utils/db.ts";
+import { getExamResults, type ExamResult } from "../utils/db.ts";
 
 interface Data {
   results: ExamResult[];
@@ -8,16 +8,8 @@ interface Data {
 
 export const handler: Handlers<Data> = {
   async GET(_req, ctx) {
-    const results: ExamResult[] = [];
     // List all results
-    // Proper way would be to filter by user, but we are using "guest-user" for all now
-    const iter = kv.list<ExamResult>({ prefix: ["results"] });
-    for await (const res of iter) {
-      results.push(res.value);
-    }
-    
-    // Sort by timestamp desc
-    results.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const results = await getExamResults();
 
     return ctx.render({ results });
   },

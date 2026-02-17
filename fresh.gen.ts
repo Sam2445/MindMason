@@ -10,9 +10,12 @@ import * as $api_auth from "./routes/api/auth.ts";
 import * as $exams_category_ from "./routes/exams/[category].tsx";
 import * as $history from "./routes/history.tsx";
 import * as $index from "./routes/index.tsx";
+import * as $leaderboard from "./routes/leaderboard.tsx";
+import * as $login from "./routes/login.tsx";
 import * as $QuestionPalette from "./islands/QuestionPalette.tsx";
 import * as $QuizEngine from "./islands/QuizEngine.tsx";
 import * as $Timer from "./islands/Timer.tsx";
+import * as $UserIdentity from "./islands/UserIdentity.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -25,11 +28,14 @@ const manifest = {
     "./routes/exams/[category].tsx": $exams_category_,
     "./routes/history.tsx": $history,
     "./routes/index.tsx": $index,
+    "./routes/leaderboard.tsx": $leaderboard,
+    "./routes/login.tsx": $login,
   },
   islands: {
     "./islands/QuestionPalette.tsx": $QuestionPalette,
     "./islands/QuizEngine.tsx": $QuizEngine,
     "./islands/Timer.tsx": $Timer,
+    "./islands/UserIdentity.tsx": $UserIdentity,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

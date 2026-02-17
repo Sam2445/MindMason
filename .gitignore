@@ -7,3 +7,5 @@ lcov.info
 test_results
 *.log
 .DS_Store
+
+/generated/prisma
