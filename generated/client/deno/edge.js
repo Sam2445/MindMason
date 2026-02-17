@@ -154,6 +154,18 @@ const config = {
         "fromEnvVar": null,
         "value": "darwin-arm64",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "darwin"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "darwin-arm64"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "linux-musl-openssl-3.0.x"
       }
     ],
     "previewFeatures": [
@@ -181,8 +193,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"deno\"]\n  output          = \"../generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Question {\n  id           String   @id @default(uuid())\n  category     String\n  text         String\n  options      String // Stored as JSON string\n  correctIndex Int\n  createdAt    DateTime @default(now())\n}\n\nmodel User {\n  id           String   @id @default(uuid())\n  username     String   @unique\n  passwordHash String\n  role         String   @default(\"USER\") // \"ADMIN\", \"SUPERUSER\"\n  createdAt    DateTime @default(now())\n}\n\nmodel ExamResult {\n  id             String   @id @default(uuid())\n  userId         String\n  category       String\n  score          Int\n  totalQuestions Int\n  correctAnswers Int\n  timeTaken      Int\n  timestamp      DateTime @default(now())\n}\n",
-  "inlineSchemaHash": "6a7e3f086f3ced56af0afbe2cf9acde03f289b1e6de73702ef4d89e7fe726603",
+  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  previewFeatures = [\"deno\"]\n  output          = \"../generated/client\"\n  binaryTargets   = [\"native\", \"darwin\", \"darwin-arm64\", \"linux-musl-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Question {\n  id           String   @id @default(uuid())\n  category     String\n  text         String\n  options      String // Stored as JSON string\n  correctIndex Int\n  createdAt    DateTime @default(now())\n}\n\nmodel User {\n  id           String   @id @default(uuid())\n  username     String   @unique\n  passwordHash String\n  role         String   @default(\"USER\") // \"ADMIN\", \"SUPERUSER\"\n  createdAt    DateTime @default(now())\n}\n\nmodel ExamResult {\n  id             String   @id @default(uuid())\n  userId         String\n  category       String\n  score          Int\n  totalQuestions Int\n  correctAnswers Int\n  timeTaken      Int\n  timestamp      DateTime @default(now())\n}\n",
+  "inlineSchemaHash": "1796d7489a4dde1dcead123d44853f5a185fcb5847be4ae44a92574f47d7f40c",
   "copyEngine": true
 }
 config.dirname = '/'
