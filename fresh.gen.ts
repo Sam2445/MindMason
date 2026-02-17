@@ -4,6 +4,7 @@
 
 import * as $_app from "./routes/_app.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
+import * as $admin from "./routes/admin.tsx";
 import * as $api_path_ from "./routes/api/[...path].ts";
 import * as $api_auth from "./routes/api/auth.ts";
 import * as $exams_category_ from "./routes/exams/[category].tsx";
@@ -18,6 +19,7 @@ const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
     "./routes/_middleware.ts": $_middleware,
+    "./routes/admin.tsx": $admin,
     "./routes/api/[...path].ts": $api_path_,
     "./routes/api/auth.ts": $api_auth,
     "./routes/exams/[category].tsx": $exams_category_,
