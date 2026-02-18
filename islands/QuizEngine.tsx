@@ -91,12 +91,21 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
             const stored = localStorage.getItem(key);
             if (stored) {
               const data = JSON.parse(stored);
-              if (data.answers) setAnswers(data.answers);
-              if (data.marked) setMarked(data.marked);
-              if (data.startTime) {
-                const elapsed = Math.floor((Date.now() - data.startTime) / 1000);
-                const remaining = (60 * 10) - elapsed;
-                setInitialTime(remaining <= 0 ? 0 : remaining);
+              const startTime = data.startTime || Date.now();
+              const elapsed = Math.floor((Date.now() - startTime) / 1000);
+              const remaining = (60 * 10) - elapsed;
+
+              if (remaining <= 0) {
+                  // Session expired, clear it and start fresh
+                  localStorage.removeItem(key);
+                  const newSession = { startTime: Date.now(), answers: {}, marked: {} };
+                  localStorage.setItem(key, JSON.stringify(newSession));
+                  // We don't verify old answers if expired
+              } else {
+                  // Restore valid session
+                  if (data.answers) setAnswers(data.answers);
+                  if (data.marked) setMarked(data.marked);
+                  setInitialTime(remaining);
               }
             } else {
               localStorage.setItem(key, JSON.stringify({ startTime: Date.now(), answers: {}, marked: {} }));
@@ -212,13 +221,29 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
     // In duel mode: two-step (select then confirm)
     if (duelId) {
       if (answers[currentIdx] !== undefined) return; // Already confirmed
+      
+      // Allow unselect/toggle
+      if (selectedOption === optionIndex) {
+          setSelectedOption(null);
+          return;
+      }
+
       setSelectedOption(optionIndex); // Just highlight, don't lock in
       return;
     }
     
-    // Non-duel (mock test): direct select as before
+    // Non-duel (mock test): direct select with toggle capability
     const actualAnswer = optionIndex === -1 ? -1 : optionIndex;
-    setAnswers((prev) => ({ ...prev, [currentIdx]: actualAnswer }));
+    
+    setAnswers((prev) => {
+        // If clicking the same option, unselect it
+        if (prev[currentIdx] === actualAnswer) {
+            const next = { ...prev };
+            delete next[currentIdx];
+            return next;
+        }
+        return { ...prev, [currentIdx]: actualAnswer };
+    });
   };
 
   // Duel-only: confirm the selected answer and send to API
@@ -275,9 +300,42 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
       });
     } catch(e) { console.error(e); }
 
-    // Auto-advance after timeout (give 1.5s to see),
-    // polling will also trigger if opponent already answered
     autoAdvanceToNext();
+  };
+
+  const handleSkipQuestion = async () => {
+    if (!duelId || answers[currentIdx] !== undefined) return;
+    
+    // Set -1 as skipped
+    setAnswers((prev) => ({ ...prev, [currentIdx]: -1 }));
+    setSelectedOption(null);
+
+    // Stop timer
+    if (duelTimerRef.current) {
+         clearInterval(duelTimerRef.current);
+         duelTimerRef.current = null;
+    }
+
+    try {
+      const myId = userIdRef.current;
+      await fetch("/api/duel/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          duelId,
+          userId: myId,
+          questionIndex: currentIdx,
+          answerIndex: -1,
+          score: duelState.p1Score,
+          isCorrect: false
+        })
+      });
+    } catch(e) { console.error(e); }
+
+    // If opponent already answered, trigger auto-advance
+    if (duelState.opponentAnswerStatus[currentIdx] !== null && duelState.opponentAnswerStatus[currentIdx] !== undefined) {
+      autoAdvanceToNext();
+    }
   };
 
   // Auto-advance to next question after a delay
@@ -541,7 +599,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
                <div class="text-6xl font-bold text-blue-400">{result.score}/{questions.length}</div>
                <div class="flex justify-center gap-4">
                  <a href="/" class="px-6 py-2 bg-gray-700 rounded">Home</a>
-                 <button type="button" onClick={() => window.location.reload()} class="px-6 py-2 bg-blue-600 rounded">Retry</button>
+                 <button type="button" onClick={() => { localStorage.removeItem(`quiz_session_${category}`); window.location.reload(); }} class="px-6 py-2 bg-blue-600 rounded">Retry</button>
                </div>
             </div>
             
@@ -597,7 +655,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
               <div class="absolute top-0 left-0 right-0 z-40 bg-gray-900/90 backdrop-blur-sm border-b border-gray-700 px-4 py-2 flex justify-between items-center animate-fade-in">
                   <div class="flex items-center gap-2 text-sm">
                       <span class="text-gray-400">You:</span>
-                      {answers[currentIdx] === -1 ? <span class="text-yellow-500 font-bold">⏰ Timed Out</span> :
+                      {answers[currentIdx] === -1 ? <span class="text-yellow-500 font-bold">Skipped / Timeout</span> :
                        answers[currentIdx] === currentQuestion.correctIndex 
                           ? <span class="text-emerald-400 font-bold">✓ Correct</span> 
                           : <span class="text-red-400 font-bold">✗ Wrong</span>}
@@ -644,6 +702,9 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
                     } else {
                         btnClass += "bg-gray-700/30 border-gray-600 opacity-50 ";
                     }
+                } else if (isConfirmed) {
+                    // Standard active selection (Mock test)
+                    btnClass += "bg-blue-600/30 border-blue-500 text-blue-200 ring-1 ring-blue-500 ";
                 } else {
                     btnClass += "bg-gray-700/30 border-gray-600 hover:bg-gray-700 hover:border-gray-500 text-gray-300 ";
                 }
@@ -656,7 +717,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
                     disabled={submitted || (!!duelId && answerLocked) || (!!duelId && duelTimeLeft <= 0)}
                     class={btnClass}
                   >
-                    <span class={`w-8 h-8 rounded-full flex items-center justify-center mr-4 text-sm font-bold border ${isPending ? 'border-blue-400 bg-blue-500/20' : 'border-gray-500'}`}>
+                    <span class={`w-8 h-8 rounded-full flex items-center justify-center mr-4 text-sm font-bold border ${(isPending || (!showFeedback && isConfirmed)) ? 'border-blue-400 bg-blue-500/20' : 'border-gray-500'}`}>
                       {String.fromCharCode(65 + idx)}
                     </span>
                     {opt}
@@ -667,15 +728,26 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
             </div>
 
             {/* Submit Answer Button (duel only, shown when option selected but not confirmed) */}
-            {duelId && selectedOption !== null && answers[currentIdx] === undefined && (
-              <div class="mt-6 flex justify-center animate-fade-in-up">
-                <button
-                  type="button"
-                  onClick={handleConfirmAnswer}
-                  class="px-10 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-lg shadow-lg shadow-blue-500/25 transition-all transform hover:scale-[1.02] active:scale-95"
-                >
-                  ✅ Submit Answer
-                </button>
+            {/* Submit Answer Button or Skip (duel only) */}
+            {duelId && answers[currentIdx] === undefined && (
+              <div class="mt-6 flex justify-center gap-4 animate-fade-in-up">
+                {selectedOption !== null ? (
+                    <button
+                      type="button"
+                      onClick={handleConfirmAnswer}
+                      class="px-10 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-lg shadow-lg shadow-blue-500/25 transition-all transform hover:scale-[1.02] active:scale-95"
+                    >
+                      ✅ Submit Answer
+                    </button>
+                ) : (
+                    <button
+                      type="button"
+                      onClick={handleSkipQuestion}
+                      class="px-10 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-bold text-lg shadow-lg transition-all transform hover:scale-[1.02] active:scale-95"
+                    >
+                      ⏭️ Skip Question
+                    </button>
+                )}
               </div>
             )}
             

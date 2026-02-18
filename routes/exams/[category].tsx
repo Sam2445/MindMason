@@ -4,7 +4,6 @@ import {
   getQuestions,
   getRandomQuestions,
   type Question,
-  seedQuestionsIfEmpty,
 } from "../../utils/db.ts";
 import { getSubjectsForExam, type SubjectInfo } from "../../utils/subjects.ts";
 import QuizEngine from "../../islands/QuizEngine.tsx";
@@ -27,8 +26,8 @@ export const handler: Handlers<Data> = {
     const countParam = url.searchParams.get("count");
     const subjectParam = url.searchParams.get("subject");
 
-    // Seed database if empty just in case
-    await seedQuestionsIfEmpty();
+    // Seed check removed for performance/stability
+
 
     // Step 1: No subject selected → show subject picker
     if (!subjectParam && !countParam) {

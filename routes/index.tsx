@@ -2,6 +2,7 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { getCookies } from "$std/http/cookie.ts";
 import { getUser, prisma } from "../utils/db.ts";
 import DuelDashboardCard from "../islands/DuelDashboardCard.tsx";
+import { EXAM_SUBJECTS } from "../utils/subjects.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
@@ -100,6 +101,29 @@ export default function Home(props: PageProps) {
                   />
                 </div>
               </div>
+              
+              <h3 class="text-xl font-bold mb-4 text-gray-200">
+                Browse Exams
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8">
+                {Object.values(EXAM_SUBJECTS).map((exam) => (
+                  <a
+                    key={exam.examId}
+                    href={`/exams/${exam.examId.toLowerCase()}`}
+                    class="block p-4 bg-gray-800 rounded-xl border border-gray-700 hover:border-blue-500 hover:bg-gray-750 transition-all group"
+                  >
+                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                      {getExamIcon(exam.examId)} 
+                    </div>
+                    <h3 class="font-bold text-gray-200 group-hover:text-blue-400">
+                      {exam.examLabel}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1">
+                      {exam.subjects.length} Subjects
+                    </p>
+                  </a>
+                ))}
+              </div>
 
               <h3 class="text-xl font-bold mb-4 text-gray-200">
                 Recommended for {user.targetExam || "You"}
@@ -181,4 +205,18 @@ function ExamCard(
       <p class="text-gray-400 text-sm">{desc}</p>
     </a>
   );
+}
+
+function getExamIcon(id: string) {
+  const icons: Record<string, string> = {
+    BANKING: "🏦",
+    UPSC: "🏛️",
+    SSC: "🏢",
+    RAILWAYS: "🚂",
+    DEFENCE: "🛡️",
+    TEACHING: "👨‍🏫",
+    STATE_EXAMS: "🗺️",
+    OTHER: "📚"
+  };
+  return icons[id] || "📝";
 }

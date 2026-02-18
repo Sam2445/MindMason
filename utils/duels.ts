@@ -15,6 +15,10 @@ const ELO_CORRECT_GAIN = 5;   // ELO gained per correct answer
 const ELO_WRONG_LOSS = 3;     // ELO lost per wrong answer
 const ELO_FLOOR = 100;        // Minimum ELO rating
 
+// Extra penalties applied at duel end
+const PENALTY_PER_WRONG = 2;
+const PENALTY_PER_SKIP = 0.5;
+
 export interface DuelState {
   id: string;
   player1Id: string;
@@ -252,8 +256,30 @@ export async function completeDuelWithProgress(duelId: string, finalStatus: "COM
                 s1 = 0; s2 = 1;
             }
 
-            const newR1 = calculateElo(p1.skillRating, p2.skillRating, s1);
-            const newR2 = calculateElo(p2.skillRating, p1.skillRating, s2);
+            let newR1 = calculateElo(p1.skillRating, p2.skillRating, s1);
+            let newR2 = calculateElo(p2.skillRating, p1.skillRating, s2);
+
+            // Apply specific penalties for Wrong vs Skip (user request)
+            const questions = duel.questions ? JSON.parse(duel.questions) : [];
+            
+            const calcPenalty = (answers: Record<string, number>) => {
+                let p = 0;
+                questions.forEach((q: any, idx: number) => {
+                    const ans = answers[idx];
+                    if (ans === undefined || ans === -1) {
+                         p += PENALTY_PER_SKIP; 
+                    } else if (ans !== q.correctIndex) {
+                         p += PENALTY_PER_WRONG;
+                    }
+                });
+                return Math.round(p);
+            };
+
+            const pen1 = calcPenalty(p1Progress.answers || {});
+            const pen2 = calcPenalty(p2Progress.answers || {});
+
+            newR1 = Math.max(ELO_FLOOR, newR1 - pen1);
+            newR2 = Math.max(ELO_FLOOR, newR2 - pen2);
 
             // @ts-ignore: Prisma dynamic model access
             await prisma.user.update({ where: { id: duel.player1Id }, data: { skillRating: newR1 } });
