@@ -1,4 +1,3 @@
-
 // scripts/build.ts
 
 async function run(cmd: string[]) {
@@ -30,9 +29,11 @@ try {
     console.log("  - Renamed index.js to index.cjs");
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
-        // Only error if it's NOT a "not found" error. If it's effectively already renamed, we proceed.
-        // But actually, generate creates index.js.
-        console.log("  - index.js not found, skipping rename (or already renamed)."); 
+      // Only error if it's NOT a "not found" error. If it's effectively already renamed, we proceed.
+      // But actually, generate creates index.js.
+      console.log(
+        "  - index.js not found, skipping rename (or already renamed).",
+      );
     }
   }
 
@@ -42,17 +43,17 @@ try {
     pkg.type = "commonjs";
     pkg.main = "index.cjs";
     if (pkg.exports) {
-        // recursive replace .js -> .cjs in exports
-        const replaceExt = (obj: Record<string, unknown>) => {
-            for (const key in obj) {
-                if (typeof obj[key] === "string") {
-                    obj[key] = (obj[key] as string).replace(/\.js$/, ".cjs");
-                } else if (typeof obj[key] === "object" && obj[key] !== null) {
-                    replaceExt(obj[key] as Record<string, unknown>);
-                }
-            }
-        };
-        replaceExt(pkg.exports as Record<string, unknown>);
+      // recursive replace .js -> .cjs in exports
+      const replaceExt = (obj: Record<string, unknown>) => {
+        for (const key in obj) {
+          if (typeof obj[key] === "string") {
+            obj[key] = (obj[key] as string).replace(/\.js$/, ".cjs");
+          } else if (typeof obj[key] === "object" && obj[key] !== null) {
+            replaceExt(obj[key] as Record<string, unknown>);
+          }
+        }
+      };
+      replaceExt(pkg.exports as Record<string, unknown>);
     }
     await Deno.writeTextFile(packagePath, JSON.stringify(pkg, null, 2));
     console.log("  - Updated package.json with type: commonjs");

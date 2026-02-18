@@ -1,20 +1,22 @@
-
-import { createRequire } from "node:module";
+// @ts-ignore: Prisma generated client import
+import pkg from "../generated/client/index.js";
 import * as bcrypt from "npm:bcryptjs";
-import type { PrismaClient as PrismaClientType } from "../generated/client/index.d.ts";
 
-const require = createRequire(import.meta.url);
-const { PrismaClient } = require("../generated/client/index.cjs");
+const { PrismaClient } = pkg;
 
 // Initialize Prisma Client
-const prisma = new PrismaClient() as PrismaClientType;
+// deno-lint-ignore no-explicit-any
+export const prisma = new PrismaClient() as any;
 
 export interface Question {
   id: string;
   category: string;
+  subject?: string;
   text: string;
   options: string[];
   correctIndex: number;
+  explanation?: string;
+  difficulty?: string;
 }
 
 export interface ExamResult {
@@ -35,17 +37,60 @@ export interface LeaderboardEntry {
   averageScore: number;
 }
 
-// ---- Database Operations ----
-
-export async function checkUser(username: string, password: string): Promise<boolean> {
+// @ts-ignore
+export async function createUser(username: string, passwordHash: string) {
   try {
-     // @ts-ignore - Prisma client types might not be fully synced in IDE yet
-     const user = await prisma.user.findUnique({ where: { username } });
-     if (!user) return false;
-     return await bcrypt.compare(password, user.passwordHash);
+    // @ts-ignore
+    return await prisma.user.create({
+      data: {
+        username,
+        passwordHash,
+      },
+    });
   } catch (e) {
-     console.error("Auth error", e);
-     return false;
+    console.error("Error creating user:", e);
+    throw e;
+  }
+}
+
+export async function checkUser(username: string, password: string) {
+  try {
+    // @ts-ignore
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return null;
+    const match = await bcrypt.compare(password, user.passwordHash);
+    return match ? user : null;
+  } catch (e) {
+    console.error("Auth error", e);
+    return null;
+  }
+}
+
+export async function updateUserPreferences(
+  userId: string,
+  targetExam: string,
+) {
+  try {
+    // @ts-ignore
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        targetExam,
+        onboardingCompleted: true,
+      },
+    });
+  } catch (e) {
+    console.error("Error updating preferences:", e);
+    throw e;
+  }
+}
+
+export async function getUser(userId: string) {
+  try {
+    // @ts-ignore
+    return await prisma.user.findUnique({ where: { id: userId } });
+  } catch (e) {
+    return null;
   }
 }
 
@@ -55,9 +100,14 @@ export async function addQuestion(q: Question) {
       data: {
         id: q.id || crypto.randomUUID(),
         category: q.category,
+        subject: q.subject || "general",
         text: q.text,
         options: JSON.stringify(q.options), // Store options as JSON string
         correctIndex: q.correctIndex,
+        // @ts-ignore: Prisma dynamic model access
+        explanation: q.explanation,
+        // @ts-ignore: Prisma dynamic model access
+        difficulty: q.difficulty,
       },
     });
     return { ...created, options: JSON.parse(created.options) };
@@ -67,15 +117,24 @@ export async function addQuestion(q: Question) {
   }
 }
 
-export async function getQuestions(category?: string): Promise<Question[]> {
+export async function getQuestions(category?: string, subject?: string): Promise<Question[]> {
   try {
-    const where = category ? { category } : {};
+    const where: Record<string, unknown> = {};
+    if (category) {
+      where.category = { equals: category, mode: "insensitive" };
+    }
+    if (subject && subject !== "all") {
+      where.subject = { equals: subject, mode: "insensitive" };
+    }
+    // @ts-ignore: Prisma dynamic model access
     const rawQuestions = await prisma.question.findMany({ where });
-    
+
     return rawQuestions.map((q: any) => {
       let options = [];
       try {
-        options = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+        options = typeof q.options === "string"
+          ? JSON.parse(q.options)
+          : q.options;
       } catch (e) {
         console.error(`Failed to parse options for question ${q.id}`, e);
         options = ["Error loading options"];
@@ -83,9 +142,12 @@ export async function getQuestions(category?: string): Promise<Question[]> {
       return {
         id: q.id,
         category: q.category,
+        subject: q.subject || "general",
         text: q.text,
         options,
         correctIndex: q.correctIndex,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
       };
     });
   } catch (e) {
@@ -94,8 +156,12 @@ export async function getQuestions(category?: string): Promise<Question[]> {
   }
 }
 
-export async function getRandomQuestions(category: string, count: number): Promise<Question[]> {
-  const all = await getQuestions(category);
+export async function getRandomQuestions(
+  category: string,
+  count: number,
+  subject?: string,
+): Promise<Question[]> {
+  const all = await getQuestions(category, subject);
   // Fisher-Yates Shuffle
   for (let i = all.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -150,26 +216,54 @@ export async function getExamResults(): Promise<ExamResult[]> {
   }
 }
 
-export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
-  const results = await getExamResults();
+export async function getLeaderboard() {
+  // @ts-ignore
+  const results = await prisma.examResult.findMany({
+    orderBy: { score: 'desc' }
+  });
   
-  const stats: Record<string, { total: number, count: number }> = {};
+  // Since we might not have a direct relation in schema yet or it's implicitly handled, 
+  // let's do a safe manual filter.
+  // Ideally: schema should have relation. 
+  // Let's first get all unique userIds from results
+  const userIds = [...new Set(results.map((r: any) => r.userId))];
   
+  // Fetch users who are NOT bots
+  // @ts-ignore
+  const validUsers = await prisma.user.findMany({
+      where: {
+          id: { in: userIds },
+          isBot: false
+      }
+  });
+
+  const validUserIds = new Set(validUsers.map((u: any) => u.id));
+  const userMap = new Map(validUsers.map((u: any) => [u.id, u]));
+
+  const stats: Record<string, { total: number; count: number; username: string }> = {};
+
   for (const r of results) {
-    const name = r.userId || "Anonymous";
-    if (name === "guest-user") continue; // Optionally skip guests
+    if (!validUserIds.has(r.userId)) continue;
     
-    if (!stats[name]) stats[name] = { total: 0, count: 0 };
-    stats[name].total += r.score;
-    stats[name].count += 1;
+    // @ts-ignore
+    const user = userMap.get(r.userId);
+    const name = user?.username || r.userId;
+    
+    if (name === "admin" || name === "guest-user") continue; 
+
+    if (!stats[r.userId]) {
+        stats[r.userId] = { total: 0, count: 0, username: name };
+    }
+    stats[r.userId].total += r.score;
+    stats[r.userId].count += 1;
   }
-  
-  return Object.entries(stats)
-    .map(([userId, data]) => ({
-      userId,
+
+  return Object.values(stats)
+    .map((data) => ({
+      userId: data.username,
       totalScore: data.total,
       testsTaken: data.count,
-      averageScore: Math.round(data.total / data.count)
+      averageScore: Math.round(data.total / data.count),
     }))
     .sort((a, b) => b.totalScore - a.totalScore)
     .slice(0, 50);
@@ -179,6 +273,12 @@ export async function seedQuestionsIfEmpty() {
   const count = await prisma.question.count();
   if (count === 0) {
     console.log("Seeding Database...");
-    await addQuestion({ id: "1", category: "upsc", text: "Sample Question?", options: ["A","B","C","D"], correctIndex: 0 });
+    await addQuestion({
+      id: "1",
+      category: "upsc",
+      text: "Sample Question?",
+      options: ["A", "B", "C", "D"],
+      correctIndex: 0,
+    });
   }
 }

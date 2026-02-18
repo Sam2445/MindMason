@@ -1,8 +1,7 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["deno"]
-  output          = "../generated/client"
-  binaryTargets   = ["native", "darwin", "darwin-arm64", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  output        = "../generated/client"
+  binaryTargets = ["native", "darwin", "darwin-arm64", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -13,18 +12,26 @@ datasource db {
 model Question {
   id           String   @id @default(uuid())
   category     String
+  subject      String   @default("general") // Subject within category (e.g., "quantitative_aptitude", "english", "reasoning")
   text         String
   options      String // Stored as JSON string
   correctIndex Int
+  explanation  String? // Detailed explanation for the answer
+  difficulty   String   @default("MEDIUM") // EASY, MEDIUM, HARD
   createdAt    DateTime @default(now())
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  passwordHash String
-  role         String   @default("USER") // "ADMIN", "SUPERUSER"
-  createdAt    DateTime @default(now())
+  id                  String   @id @default(uuid())
+  username            String   @unique
+  passwordHash        String
+  role                String   @default("USER") // "ADMIN", "SUPERUSER"
+  targetExam          String? // e.g., "UPSC", "SSC", "BANKING"
+  onboardingCompleted Boolean  @default(false)
+  isPremium           Boolean  @default(false)
+  isBot               Boolean  @default(false)
+  skillRating         Int      @default(1000) // ELO Rating style
+  createdAt           DateTime @default(now())
 }
 
 model ExamResult {
@@ -35,5 +42,26 @@ model ExamResult {
   totalQuestions Int
   correctAnswers Int
   timeTaken      Int
+  duelId         String? // Link to Duel if part of a match
   timestamp      DateTime @default(now())
+}
+
+model Duel {
+  id        String  @id @default(uuid())
+  player1Id String
+  player2Id String?
+  winnerId  String?
+  category  String
+  subject   String  @default("all") // Subject within category for this duel
+  variant   String  @default("STANDARD") // STANDARD, RAPID, BLITZ
+  status    String  @default("WAITING") // WAITING, ACTIVE, COMPLETED
+  questions String? // JSON string of Question[]
+
+  // Progress Tracking (JSON strings)
+  // Format: { currentQuestionIndex: number, answers: { [questionIndex]: { answerIndex: number, correct: boolean } }, score: number }
+  player1Progress String?
+  player2Progress String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

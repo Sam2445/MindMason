@@ -7,11 +7,26 @@ import * as $_middleware from "./routes/_middleware.ts";
 import * as $admin from "./routes/admin.tsx";
 import * as $api_path_ from "./routes/api/[...path].ts";
 import * as $api_auth from "./routes/api/auth.ts";
+import * as $api_duel_answer from "./routes/api/duel/answer.ts";
+import * as $api_duel_bot from "./routes/api/duel/bot.ts";
+import * as $api_duel_exit from "./routes/api/duel/exit.ts";
+import * as $api_duel_queue from "./routes/api/duel/queue.ts";
+import * as $api_duel_status from "./routes/api/duel/status.ts";
+import * as $api_logout from "./routes/api/logout.ts";
+import * as $api_submit_score from "./routes/api/submit-score.ts";
+import * as $duels_duelId_ from "./routes/duels/[duelId].tsx";
+import * as $duels_join from "./routes/duels/join.tsx";
+import * as $duels_review_duelId_ from "./routes/duels/review/[duelId].tsx";
 import * as $exams_category_ from "./routes/exams/[category].tsx";
 import * as $history from "./routes/history.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $leaderboard from "./routes/leaderboard.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $onboarding from "./routes/onboarding.tsx";
+import * as $signup from "./routes/signup.tsx";
+import * as $DuelDashboardCard from "./islands/DuelDashboardCard.tsx";
+import * as $DuelLobby from "./islands/DuelLobby.tsx";
+import * as $HistoryTabs from "./islands/HistoryTabs.tsx";
 import * as $QuestionPalette from "./islands/QuestionPalette.tsx";
 import * as $QuizEngine from "./islands/QuizEngine.tsx";
 import * as $Timer from "./islands/Timer.tsx";
@@ -25,13 +40,28 @@ const manifest = {
     "./routes/admin.tsx": $admin,
     "./routes/api/[...path].ts": $api_path_,
     "./routes/api/auth.ts": $api_auth,
+    "./routes/api/duel/answer.ts": $api_duel_answer,
+    "./routes/api/duel/bot.ts": $api_duel_bot,
+    "./routes/api/duel/exit.ts": $api_duel_exit,
+    "./routes/api/duel/queue.ts": $api_duel_queue,
+    "./routes/api/duel/status.ts": $api_duel_status,
+    "./routes/api/logout.ts": $api_logout,
+    "./routes/api/submit-score.ts": $api_submit_score,
+    "./routes/duels/[duelId].tsx": $duels_duelId_,
+    "./routes/duels/join.tsx": $duels_join,
+    "./routes/duels/review/[duelId].tsx": $duels_review_duelId_,
     "./routes/exams/[category].tsx": $exams_category_,
     "./routes/history.tsx": $history,
     "./routes/index.tsx": $index,
     "./routes/leaderboard.tsx": $leaderboard,
     "./routes/login.tsx": $login,
+    "./routes/onboarding.tsx": $onboarding,
+    "./routes/signup.tsx": $signup,
   },
   islands: {
+    "./islands/DuelDashboardCard.tsx": $DuelDashboardCard,
+    "./islands/DuelLobby.tsx": $DuelLobby,
+    "./islands/HistoryTabs.tsx": $HistoryTabs,
     "./islands/QuestionPalette.tsx": $QuestionPalette,
     "./islands/QuizEngine.tsx": $QuizEngine,
     "./islands/Timer.tsx": $Timer,

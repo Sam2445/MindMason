@@ -28,6 +28,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  * 
  */
 export type ExamResult = $Result.DefaultSelection<Prisma.$ExamResultPayload>
+/**
+ * Model Duel
+ * 
+ */
+export type Duel = $Result.DefaultSelection<Prisma.$DuelPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -181,6 +186,16 @@ export class PrismaClient<
     * ```
     */
   get examResult(): Prisma.ExamResultDelegate<ExtArgs>;
+
+  /**
+   * `prisma.duel`: Exposes CRUD operations for the **Duel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Duels
+    * const duels = await prisma.duel.findMany()
+    * ```
+    */
+  get duel(): Prisma.DuelDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -624,7 +639,8 @@ export namespace Prisma {
   export const ModelName: {
     Question: 'Question',
     User: 'User',
-    ExamResult: 'ExamResult'
+    ExamResult: 'ExamResult',
+    Duel: 'Duel'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -640,7 +656,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "question" | "user" | "examResult"
+      modelProps: "question" | "user" | "examResult" | "duel"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -854,6 +870,76 @@ export namespace Prisma {
           }
         }
       }
+      Duel: {
+        payload: Prisma.$DuelPayload<ExtArgs>
+        fields: Prisma.DuelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DuelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DuelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          findFirst: {
+            args: Prisma.DuelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DuelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          findMany: {
+            args: Prisma.DuelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>[]
+          }
+          create: {
+            args: Prisma.DuelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          createMany: {
+            args: Prisma.DuelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DuelCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>[]
+          }
+          delete: {
+            args: Prisma.DuelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          update: {
+            args: Prisma.DuelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          deleteMany: {
+            args: Prisma.DuelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DuelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DuelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DuelPayload>
+          }
+          aggregate: {
+            args: Prisma.DuelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDuel>
+          }
+          groupBy: {
+            args: Prisma.DuelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DuelGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DuelCountArgs<ExtArgs>
+            result: $Utils.Optional<DuelCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1038,27 +1124,36 @@ export namespace Prisma {
   export type QuestionMinAggregateOutputType = {
     id: string | null
     category: string | null
+    subject: string | null
     text: string | null
     options: string | null
     correctIndex: number | null
+    explanation: string | null
+    difficulty: string | null
     createdAt: Date | null
   }
 
   export type QuestionMaxAggregateOutputType = {
     id: string | null
     category: string | null
+    subject: string | null
     text: string | null
     options: string | null
     correctIndex: number | null
+    explanation: string | null
+    difficulty: string | null
     createdAt: Date | null
   }
 
   export type QuestionCountAggregateOutputType = {
     id: number
     category: number
+    subject: number
     text: number
     options: number
     correctIndex: number
+    explanation: number
+    difficulty: number
     createdAt: number
     _all: number
   }
@@ -1075,27 +1170,36 @@ export namespace Prisma {
   export type QuestionMinAggregateInputType = {
     id?: true
     category?: true
+    subject?: true
     text?: true
     options?: true
     correctIndex?: true
+    explanation?: true
+    difficulty?: true
     createdAt?: true
   }
 
   export type QuestionMaxAggregateInputType = {
     id?: true
     category?: true
+    subject?: true
     text?: true
     options?: true
     correctIndex?: true
+    explanation?: true
+    difficulty?: true
     createdAt?: true
   }
 
   export type QuestionCountAggregateInputType = {
     id?: true
     category?: true
+    subject?: true
     text?: true
     options?: true
     correctIndex?: true
+    explanation?: true
+    difficulty?: true
     createdAt?: true
     _all?: true
   }
@@ -1189,9 +1293,12 @@ export namespace Prisma {
   export type QuestionGroupByOutputType = {
     id: string
     category: string
+    subject: string
     text: string
     options: string
     correctIndex: number
+    explanation: string | null
+    difficulty: string
     createdAt: Date
     _count: QuestionCountAggregateOutputType | null
     _avg: QuestionAvgAggregateOutputType | null
@@ -1217,27 +1324,36 @@ export namespace Prisma {
   export type QuestionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    subject?: boolean
     text?: boolean
     options?: boolean
     correctIndex?: boolean
+    explanation?: boolean
+    difficulty?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["question"]>
 
   export type QuestionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    subject?: boolean
     text?: boolean
     options?: boolean
     correctIndex?: boolean
+    explanation?: boolean
+    difficulty?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["question"]>
 
   export type QuestionSelectScalar = {
     id?: boolean
     category?: boolean
+    subject?: boolean
     text?: boolean
     options?: boolean
     correctIndex?: boolean
+    explanation?: boolean
+    difficulty?: boolean
     createdAt?: boolean
   }
 
@@ -1248,9 +1364,12 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: string
+      subject: string
       text: string
       options: string
       correctIndex: number
+      explanation: string | null
+      difficulty: string
       createdAt: Date
     }, ExtArgs["result"]["question"]>
     composites: {}
@@ -1647,9 +1766,12 @@ export namespace Prisma {
   interface QuestionFieldRefs {
     readonly id: FieldRef<"Question", 'String'>
     readonly category: FieldRef<"Question", 'String'>
+    readonly subject: FieldRef<"Question", 'String'>
     readonly text: FieldRef<"Question", 'String'>
     readonly options: FieldRef<"Question", 'String'>
     readonly correctIndex: FieldRef<"Question", 'Int'>
+    readonly explanation: FieldRef<"Question", 'String'>
+    readonly difficulty: FieldRef<"Question", 'String'>
     readonly createdAt: FieldRef<"Question", 'DateTime'>
   }
     
@@ -1945,8 +2067,18 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    skillRating: number | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    skillRating: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -1954,6 +2086,11 @@ export namespace Prisma {
     username: string | null
     passwordHash: string | null
     role: string | null
+    targetExam: string | null
+    onboardingCompleted: boolean | null
+    isPremium: boolean | null
+    isBot: boolean | null
+    skillRating: number | null
     createdAt: Date | null
   }
 
@@ -1962,6 +2099,11 @@ export namespace Prisma {
     username: string | null
     passwordHash: string | null
     role: string | null
+    targetExam: string | null
+    onboardingCompleted: boolean | null
+    isPremium: boolean | null
+    isBot: boolean | null
+    skillRating: number | null
     createdAt: Date | null
   }
 
@@ -1970,16 +2112,34 @@ export namespace Prisma {
     username: number
     passwordHash: number
     role: number
+    targetExam: number
+    onboardingCompleted: number
+    isPremium: number
+    isBot: number
+    skillRating: number
     createdAt: number
     _all: number
   }
 
+
+  export type UserAvgAggregateInputType = {
+    skillRating?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    skillRating?: true
+  }
 
   export type UserMinAggregateInputType = {
     id?: true
     username?: true
     passwordHash?: true
     role?: true
+    targetExam?: true
+    onboardingCompleted?: true
+    isPremium?: true
+    isBot?: true
+    skillRating?: true
     createdAt?: true
   }
 
@@ -1988,6 +2148,11 @@ export namespace Prisma {
     username?: true
     passwordHash?: true
     role?: true
+    targetExam?: true
+    onboardingCompleted?: true
+    isPremium?: true
+    isBot?: true
+    skillRating?: true
     createdAt?: true
   }
 
@@ -1996,6 +2161,11 @@ export namespace Prisma {
     username?: true
     passwordHash?: true
     role?: true
+    targetExam?: true
+    onboardingCompleted?: true
+    isPremium?: true
+    isBot?: true
+    skillRating?: true
     createdAt?: true
     _all?: true
   }
@@ -2038,6 +2208,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -2068,6 +2250,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -2077,8 +2261,15 @@ export namespace Prisma {
     username: string
     passwordHash: string
     role: string
+    targetExam: string | null
+    onboardingCompleted: boolean
+    isPremium: boolean
+    isBot: boolean
+    skillRating: number
     createdAt: Date
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -2102,6 +2293,11 @@ export namespace Prisma {
     username?: boolean
     passwordHash?: boolean
     role?: boolean
+    targetExam?: boolean
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -2110,6 +2306,11 @@ export namespace Prisma {
     username?: boolean
     passwordHash?: boolean
     role?: boolean
+    targetExam?: boolean
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -2118,6 +2319,11 @@ export namespace Prisma {
     username?: boolean
     passwordHash?: boolean
     role?: boolean
+    targetExam?: boolean
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: boolean
     createdAt?: boolean
   }
 
@@ -2130,6 +2336,11 @@ export namespace Prisma {
       username: string
       passwordHash: string
       role: string
+      targetExam: string | null
+      onboardingCompleted: boolean
+      isPremium: boolean
+      isBot: boolean
+      skillRating: number
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -2528,6 +2739,11 @@ export namespace Prisma {
     readonly username: FieldRef<"User", 'String'>
     readonly passwordHash: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'String'>
+    readonly targetExam: FieldRef<"User", 'String'>
+    readonly onboardingCompleted: FieldRef<"User", 'Boolean'>
+    readonly isPremium: FieldRef<"User", 'Boolean'>
+    readonly isBot: FieldRef<"User", 'Boolean'>
+    readonly skillRating: FieldRef<"User", 'Int'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -2851,6 +3067,7 @@ export namespace Prisma {
     totalQuestions: number | null
     correctAnswers: number | null
     timeTaken: number | null
+    duelId: string | null
     timestamp: Date | null
   }
 
@@ -2862,6 +3079,7 @@ export namespace Prisma {
     totalQuestions: number | null
     correctAnswers: number | null
     timeTaken: number | null
+    duelId: string | null
     timestamp: Date | null
   }
 
@@ -2873,6 +3091,7 @@ export namespace Prisma {
     totalQuestions: number
     correctAnswers: number
     timeTaken: number
+    duelId: number
     timestamp: number
     _all: number
   }
@@ -2900,6 +3119,7 @@ export namespace Prisma {
     totalQuestions?: true
     correctAnswers?: true
     timeTaken?: true
+    duelId?: true
     timestamp?: true
   }
 
@@ -2911,6 +3131,7 @@ export namespace Prisma {
     totalQuestions?: true
     correctAnswers?: true
     timeTaken?: true
+    duelId?: true
     timestamp?: true
   }
 
@@ -2922,6 +3143,7 @@ export namespace Prisma {
     totalQuestions?: true
     correctAnswers?: true
     timeTaken?: true
+    duelId?: true
     timestamp?: true
     _all?: true
   }
@@ -3020,6 +3242,7 @@ export namespace Prisma {
     totalQuestions: number
     correctAnswers: number
     timeTaken: number
+    duelId: string | null
     timestamp: Date
     _count: ExamResultCountAggregateOutputType | null
     _avg: ExamResultAvgAggregateOutputType | null
@@ -3050,6 +3273,7 @@ export namespace Prisma {
     totalQuestions?: boolean
     correctAnswers?: boolean
     timeTaken?: boolean
+    duelId?: boolean
     timestamp?: boolean
   }, ExtArgs["result"]["examResult"]>
 
@@ -3061,6 +3285,7 @@ export namespace Prisma {
     totalQuestions?: boolean
     correctAnswers?: boolean
     timeTaken?: boolean
+    duelId?: boolean
     timestamp?: boolean
   }, ExtArgs["result"]["examResult"]>
 
@@ -3072,6 +3297,7 @@ export namespace Prisma {
     totalQuestions?: boolean
     correctAnswers?: boolean
     timeTaken?: boolean
+    duelId?: boolean
     timestamp?: boolean
   }
 
@@ -3087,6 +3313,7 @@ export namespace Prisma {
       totalQuestions: number
       correctAnswers: number
       timeTaken: number
+      duelId: string | null
       timestamp: Date
     }, ExtArgs["result"]["examResult"]>
     composites: {}
@@ -3488,6 +3715,7 @@ export namespace Prisma {
     readonly totalQuestions: FieldRef<"ExamResult", 'Int'>
     readonly correctAnswers: FieldRef<"ExamResult", 'Int'>
     readonly timeTaken: FieldRef<"ExamResult", 'Int'>
+    readonly duelId: FieldRef<"ExamResult", 'String'>
     readonly timestamp: FieldRef<"ExamResult", 'DateTime'>
   }
     
@@ -3778,6 +4006,980 @@ export namespace Prisma {
 
 
   /**
+   * Model Duel
+   */
+
+  export type AggregateDuel = {
+    _count: DuelCountAggregateOutputType | null
+    _min: DuelMinAggregateOutputType | null
+    _max: DuelMaxAggregateOutputType | null
+  }
+
+  export type DuelMinAggregateOutputType = {
+    id: string | null
+    player1Id: string | null
+    player2Id: string | null
+    winnerId: string | null
+    category: string | null
+    subject: string | null
+    variant: string | null
+    status: string | null
+    questions: string | null
+    player1Progress: string | null
+    player2Progress: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DuelMaxAggregateOutputType = {
+    id: string | null
+    player1Id: string | null
+    player2Id: string | null
+    winnerId: string | null
+    category: string | null
+    subject: string | null
+    variant: string | null
+    status: string | null
+    questions: string | null
+    player1Progress: string | null
+    player2Progress: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DuelCountAggregateOutputType = {
+    id: number
+    player1Id: number
+    player2Id: number
+    winnerId: number
+    category: number
+    subject: number
+    variant: number
+    status: number
+    questions: number
+    player1Progress: number
+    player2Progress: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type DuelMinAggregateInputType = {
+    id?: true
+    player1Id?: true
+    player2Id?: true
+    winnerId?: true
+    category?: true
+    subject?: true
+    variant?: true
+    status?: true
+    questions?: true
+    player1Progress?: true
+    player2Progress?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DuelMaxAggregateInputType = {
+    id?: true
+    player1Id?: true
+    player2Id?: true
+    winnerId?: true
+    category?: true
+    subject?: true
+    variant?: true
+    status?: true
+    questions?: true
+    player1Progress?: true
+    player2Progress?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DuelCountAggregateInputType = {
+    id?: true
+    player1Id?: true
+    player2Id?: true
+    winnerId?: true
+    category?: true
+    subject?: true
+    variant?: true
+    status?: true
+    questions?: true
+    player1Progress?: true
+    player2Progress?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type DuelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Duel to aggregate.
+     */
+    where?: DuelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Duels to fetch.
+     */
+    orderBy?: DuelOrderByWithRelationInput | DuelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DuelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Duels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Duels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Duels
+    **/
+    _count?: true | DuelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DuelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DuelMaxAggregateInputType
+  }
+
+  export type GetDuelAggregateType<T extends DuelAggregateArgs> = {
+        [P in keyof T & keyof AggregateDuel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDuel[P]>
+      : GetScalarType<T[P], AggregateDuel[P]>
+  }
+
+
+
+
+  export type DuelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DuelWhereInput
+    orderBy?: DuelOrderByWithAggregationInput | DuelOrderByWithAggregationInput[]
+    by: DuelScalarFieldEnum[] | DuelScalarFieldEnum
+    having?: DuelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DuelCountAggregateInputType | true
+    _min?: DuelMinAggregateInputType
+    _max?: DuelMaxAggregateInputType
+  }
+
+  export type DuelGroupByOutputType = {
+    id: string
+    player1Id: string
+    player2Id: string | null
+    winnerId: string | null
+    category: string
+    subject: string
+    variant: string
+    status: string
+    questions: string | null
+    player1Progress: string | null
+    player2Progress: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: DuelCountAggregateOutputType | null
+    _min: DuelMinAggregateOutputType | null
+    _max: DuelMaxAggregateOutputType | null
+  }
+
+  type GetDuelGroupByPayload<T extends DuelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DuelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DuelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DuelGroupByOutputType[P]>
+            : GetScalarType<T[P], DuelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DuelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    player1Id?: boolean
+    player2Id?: boolean
+    winnerId?: boolean
+    category?: boolean
+    subject?: boolean
+    variant?: boolean
+    status?: boolean
+    questions?: boolean
+    player1Progress?: boolean
+    player2Progress?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["duel"]>
+
+  export type DuelSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    player1Id?: boolean
+    player2Id?: boolean
+    winnerId?: boolean
+    category?: boolean
+    subject?: boolean
+    variant?: boolean
+    status?: boolean
+    questions?: boolean
+    player1Progress?: boolean
+    player2Progress?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["duel"]>
+
+  export type DuelSelectScalar = {
+    id?: boolean
+    player1Id?: boolean
+    player2Id?: boolean
+    winnerId?: boolean
+    category?: boolean
+    subject?: boolean
+    variant?: boolean
+    status?: boolean
+    questions?: boolean
+    player1Progress?: boolean
+    player2Progress?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $DuelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Duel"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      player1Id: string
+      player2Id: string | null
+      winnerId: string | null
+      category: string
+      subject: string
+      variant: string
+      status: string
+      questions: string | null
+      player1Progress: string | null
+      player2Progress: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["duel"]>
+    composites: {}
+  }
+
+  type DuelGetPayload<S extends boolean | null | undefined | DuelDefaultArgs> = $Result.GetResult<Prisma.$DuelPayload, S>
+
+  type DuelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DuelFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DuelCountAggregateInputType | true
+    }
+
+  export interface DuelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Duel'], meta: { name: 'Duel' } }
+    /**
+     * Find zero or one Duel that matches the filter.
+     * @param {DuelFindUniqueArgs} args - Arguments to find a Duel
+     * @example
+     * // Get one Duel
+     * const duel = await prisma.duel.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DuelFindUniqueArgs>(args: SelectSubset<T, DuelFindUniqueArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Duel that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DuelFindUniqueOrThrowArgs} args - Arguments to find a Duel
+     * @example
+     * // Get one Duel
+     * const duel = await prisma.duel.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DuelFindUniqueOrThrowArgs>(args: SelectSubset<T, DuelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Duel that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelFindFirstArgs} args - Arguments to find a Duel
+     * @example
+     * // Get one Duel
+     * const duel = await prisma.duel.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DuelFindFirstArgs>(args?: SelectSubset<T, DuelFindFirstArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Duel that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelFindFirstOrThrowArgs} args - Arguments to find a Duel
+     * @example
+     * // Get one Duel
+     * const duel = await prisma.duel.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DuelFindFirstOrThrowArgs>(args?: SelectSubset<T, DuelFindFirstOrThrowArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Duels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Duels
+     * const duels = await prisma.duel.findMany()
+     * 
+     * // Get first 10 Duels
+     * const duels = await prisma.duel.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const duelWithIdOnly = await prisma.duel.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DuelFindManyArgs>(args?: SelectSubset<T, DuelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Duel.
+     * @param {DuelCreateArgs} args - Arguments to create a Duel.
+     * @example
+     * // Create one Duel
+     * const Duel = await prisma.duel.create({
+     *   data: {
+     *     // ... data to create a Duel
+     *   }
+     * })
+     * 
+     */
+    create<T extends DuelCreateArgs>(args: SelectSubset<T, DuelCreateArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Duels.
+     * @param {DuelCreateManyArgs} args - Arguments to create many Duels.
+     * @example
+     * // Create many Duels
+     * const duel = await prisma.duel.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DuelCreateManyArgs>(args?: SelectSubset<T, DuelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Duels and returns the data saved in the database.
+     * @param {DuelCreateManyAndReturnArgs} args - Arguments to create many Duels.
+     * @example
+     * // Create many Duels
+     * const duel = await prisma.duel.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Duels and only return the `id`
+     * const duelWithIdOnly = await prisma.duel.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DuelCreateManyAndReturnArgs>(args?: SelectSubset<T, DuelCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Duel.
+     * @param {DuelDeleteArgs} args - Arguments to delete one Duel.
+     * @example
+     * // Delete one Duel
+     * const Duel = await prisma.duel.delete({
+     *   where: {
+     *     // ... filter to delete one Duel
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DuelDeleteArgs>(args: SelectSubset<T, DuelDeleteArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Duel.
+     * @param {DuelUpdateArgs} args - Arguments to update one Duel.
+     * @example
+     * // Update one Duel
+     * const duel = await prisma.duel.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DuelUpdateArgs>(args: SelectSubset<T, DuelUpdateArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Duels.
+     * @param {DuelDeleteManyArgs} args - Arguments to filter Duels to delete.
+     * @example
+     * // Delete a few Duels
+     * const { count } = await prisma.duel.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DuelDeleteManyArgs>(args?: SelectSubset<T, DuelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Duels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Duels
+     * const duel = await prisma.duel.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DuelUpdateManyArgs>(args: SelectSubset<T, DuelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Duel.
+     * @param {DuelUpsertArgs} args - Arguments to update or create a Duel.
+     * @example
+     * // Update or create a Duel
+     * const duel = await prisma.duel.upsert({
+     *   create: {
+     *     // ... data to create a Duel
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Duel we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DuelUpsertArgs>(args: SelectSubset<T, DuelUpsertArgs<ExtArgs>>): Prisma__DuelClient<$Result.GetResult<Prisma.$DuelPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Duels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelCountArgs} args - Arguments to filter Duels to count.
+     * @example
+     * // Count the number of Duels
+     * const count = await prisma.duel.count({
+     *   where: {
+     *     // ... the filter for the Duels we want to count
+     *   }
+     * })
+    **/
+    count<T extends DuelCountArgs>(
+      args?: Subset<T, DuelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DuelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Duel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DuelAggregateArgs>(args: Subset<T, DuelAggregateArgs>): Prisma.PrismaPromise<GetDuelAggregateType<T>>
+
+    /**
+     * Group by Duel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DuelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DuelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DuelGroupByArgs['orderBy'] }
+        : { orderBy?: DuelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DuelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDuelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Duel model
+   */
+  readonly fields: DuelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Duel.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DuelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Duel model
+   */ 
+  interface DuelFieldRefs {
+    readonly id: FieldRef<"Duel", 'String'>
+    readonly player1Id: FieldRef<"Duel", 'String'>
+    readonly player2Id: FieldRef<"Duel", 'String'>
+    readonly winnerId: FieldRef<"Duel", 'String'>
+    readonly category: FieldRef<"Duel", 'String'>
+    readonly subject: FieldRef<"Duel", 'String'>
+    readonly variant: FieldRef<"Duel", 'String'>
+    readonly status: FieldRef<"Duel", 'String'>
+    readonly questions: FieldRef<"Duel", 'String'>
+    readonly player1Progress: FieldRef<"Duel", 'String'>
+    readonly player2Progress: FieldRef<"Duel", 'String'>
+    readonly createdAt: FieldRef<"Duel", 'DateTime'>
+    readonly updatedAt: FieldRef<"Duel", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Duel findUnique
+   */
+  export type DuelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter, which Duel to fetch.
+     */
+    where: DuelWhereUniqueInput
+  }
+
+  /**
+   * Duel findUniqueOrThrow
+   */
+  export type DuelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter, which Duel to fetch.
+     */
+    where: DuelWhereUniqueInput
+  }
+
+  /**
+   * Duel findFirst
+   */
+  export type DuelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter, which Duel to fetch.
+     */
+    where?: DuelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Duels to fetch.
+     */
+    orderBy?: DuelOrderByWithRelationInput | DuelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Duels.
+     */
+    cursor?: DuelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Duels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Duels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Duels.
+     */
+    distinct?: DuelScalarFieldEnum | DuelScalarFieldEnum[]
+  }
+
+  /**
+   * Duel findFirstOrThrow
+   */
+  export type DuelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter, which Duel to fetch.
+     */
+    where?: DuelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Duels to fetch.
+     */
+    orderBy?: DuelOrderByWithRelationInput | DuelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Duels.
+     */
+    cursor?: DuelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Duels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Duels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Duels.
+     */
+    distinct?: DuelScalarFieldEnum | DuelScalarFieldEnum[]
+  }
+
+  /**
+   * Duel findMany
+   */
+  export type DuelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter, which Duels to fetch.
+     */
+    where?: DuelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Duels to fetch.
+     */
+    orderBy?: DuelOrderByWithRelationInput | DuelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Duels.
+     */
+    cursor?: DuelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Duels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Duels.
+     */
+    skip?: number
+    distinct?: DuelScalarFieldEnum | DuelScalarFieldEnum[]
+  }
+
+  /**
+   * Duel create
+   */
+  export type DuelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * The data needed to create a Duel.
+     */
+    data: XOR<DuelCreateInput, DuelUncheckedCreateInput>
+  }
+
+  /**
+   * Duel createMany
+   */
+  export type DuelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Duels.
+     */
+    data: DuelCreateManyInput | DuelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Duel createManyAndReturn
+   */
+  export type DuelCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Duels.
+     */
+    data: DuelCreateManyInput | DuelCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Duel update
+   */
+  export type DuelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * The data needed to update a Duel.
+     */
+    data: XOR<DuelUpdateInput, DuelUncheckedUpdateInput>
+    /**
+     * Choose, which Duel to update.
+     */
+    where: DuelWhereUniqueInput
+  }
+
+  /**
+   * Duel updateMany
+   */
+  export type DuelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Duels.
+     */
+    data: XOR<DuelUpdateManyMutationInput, DuelUncheckedUpdateManyInput>
+    /**
+     * Filter which Duels to update
+     */
+    where?: DuelWhereInput
+  }
+
+  /**
+   * Duel upsert
+   */
+  export type DuelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * The filter to search for the Duel to update in case it exists.
+     */
+    where: DuelWhereUniqueInput
+    /**
+     * In case the Duel found by the `where` argument doesn't exist, create a new Duel with this data.
+     */
+    create: XOR<DuelCreateInput, DuelUncheckedCreateInput>
+    /**
+     * In case the Duel was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DuelUpdateInput, DuelUncheckedUpdateInput>
+  }
+
+  /**
+   * Duel delete
+   */
+  export type DuelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+    /**
+     * Filter which Duel to delete.
+     */
+    where: DuelWhereUniqueInput
+  }
+
+  /**
+   * Duel deleteMany
+   */
+  export type DuelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Duels to delete
+     */
+    where?: DuelWhereInput
+  }
+
+  /**
+   * Duel without action
+   */
+  export type DuelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Duel
+     */
+    select?: DuelSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -3794,9 +4996,12 @@ export namespace Prisma {
   export const QuestionScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    subject: 'subject',
     text: 'text',
     options: 'options',
     correctIndex: 'correctIndex',
+    explanation: 'explanation',
+    difficulty: 'difficulty',
     createdAt: 'createdAt'
   };
 
@@ -3808,6 +5013,11 @@ export namespace Prisma {
     username: 'username',
     passwordHash: 'passwordHash',
     role: 'role',
+    targetExam: 'targetExam',
+    onboardingCompleted: 'onboardingCompleted',
+    isPremium: 'isPremium',
+    isBot: 'isBot',
+    skillRating: 'skillRating',
     createdAt: 'createdAt'
   };
 
@@ -3822,10 +5032,30 @@ export namespace Prisma {
     totalQuestions: 'totalQuestions',
     correctAnswers: 'correctAnswers',
     timeTaken: 'timeTaken',
+    duelId: 'duelId',
     timestamp: 'timestamp'
   };
 
   export type ExamResultScalarFieldEnum = (typeof ExamResultScalarFieldEnum)[keyof typeof ExamResultScalarFieldEnum]
+
+
+  export const DuelScalarFieldEnum: {
+    id: 'id',
+    player1Id: 'player1Id',
+    player2Id: 'player2Id',
+    winnerId: 'winnerId',
+    category: 'category',
+    subject: 'subject',
+    variant: 'variant',
+    status: 'status',
+    questions: 'questions',
+    player1Progress: 'player1Progress',
+    player2Progress: 'player2Progress',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type DuelScalarFieldEnum = (typeof DuelScalarFieldEnum)[keyof typeof DuelScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -3842,6 +5072,14 @@ export namespace Prisma {
   };
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -3892,6 +5130,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3914,18 +5159,24 @@ export namespace Prisma {
     NOT?: QuestionWhereInput | QuestionWhereInput[]
     id?: StringFilter<"Question"> | string
     category?: StringFilter<"Question"> | string
+    subject?: StringFilter<"Question"> | string
     text?: StringFilter<"Question"> | string
     options?: StringFilter<"Question"> | string
     correctIndex?: IntFilter<"Question"> | number
+    explanation?: StringNullableFilter<"Question"> | string | null
+    difficulty?: StringFilter<"Question"> | string
     createdAt?: DateTimeFilter<"Question"> | Date | string
   }
 
   export type QuestionOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    subject?: SortOrder
     text?: SortOrder
     options?: SortOrder
     correctIndex?: SortOrder
+    explanation?: SortOrderInput | SortOrder
+    difficulty?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -3935,18 +5186,24 @@ export namespace Prisma {
     OR?: QuestionWhereInput[]
     NOT?: QuestionWhereInput | QuestionWhereInput[]
     category?: StringFilter<"Question"> | string
+    subject?: StringFilter<"Question"> | string
     text?: StringFilter<"Question"> | string
     options?: StringFilter<"Question"> | string
     correctIndex?: IntFilter<"Question"> | number
+    explanation?: StringNullableFilter<"Question"> | string | null
+    difficulty?: StringFilter<"Question"> | string
     createdAt?: DateTimeFilter<"Question"> | Date | string
   }, "id">
 
   export type QuestionOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    subject?: SortOrder
     text?: SortOrder
     options?: SortOrder
     correctIndex?: SortOrder
+    explanation?: SortOrderInput | SortOrder
+    difficulty?: SortOrder
     createdAt?: SortOrder
     _count?: QuestionCountOrderByAggregateInput
     _avg?: QuestionAvgOrderByAggregateInput
@@ -3961,9 +5218,12 @@ export namespace Prisma {
     NOT?: QuestionScalarWhereWithAggregatesInput | QuestionScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Question"> | string
     category?: StringWithAggregatesFilter<"Question"> | string
+    subject?: StringWithAggregatesFilter<"Question"> | string
     text?: StringWithAggregatesFilter<"Question"> | string
     options?: StringWithAggregatesFilter<"Question"> | string
     correctIndex?: IntWithAggregatesFilter<"Question"> | number
+    explanation?: StringNullableWithAggregatesFilter<"Question"> | string | null
+    difficulty?: StringWithAggregatesFilter<"Question"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Question"> | Date | string
   }
 
@@ -3975,6 +5235,11 @@ export namespace Prisma {
     username?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
     role?: StringFilter<"User"> | string
+    targetExam?: StringNullableFilter<"User"> | string | null
+    onboardingCompleted?: BoolFilter<"User"> | boolean
+    isPremium?: BoolFilter<"User"> | boolean
+    isBot?: BoolFilter<"User"> | boolean
+    skillRating?: IntFilter<"User"> | number
     createdAt?: DateTimeFilter<"User"> | Date | string
   }
 
@@ -3983,6 +5248,11 @@ export namespace Prisma {
     username?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    targetExam?: SortOrderInput | SortOrder
+    onboardingCompleted?: SortOrder
+    isPremium?: SortOrder
+    isBot?: SortOrder
+    skillRating?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -3994,6 +5264,11 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     passwordHash?: StringFilter<"User"> | string
     role?: StringFilter<"User"> | string
+    targetExam?: StringNullableFilter<"User"> | string | null
+    onboardingCompleted?: BoolFilter<"User"> | boolean
+    isPremium?: BoolFilter<"User"> | boolean
+    isBot?: BoolFilter<"User"> | boolean
+    skillRating?: IntFilter<"User"> | number
     createdAt?: DateTimeFilter<"User"> | Date | string
   }, "id" | "username">
 
@@ -4002,10 +5277,17 @@ export namespace Prisma {
     username?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    targetExam?: SortOrderInput | SortOrder
+    onboardingCompleted?: SortOrder
+    isPremium?: SortOrder
+    isBot?: SortOrder
+    skillRating?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -4016,6 +5298,11 @@ export namespace Prisma {
     username?: StringWithAggregatesFilter<"User"> | string
     passwordHash?: StringWithAggregatesFilter<"User"> | string
     role?: StringWithAggregatesFilter<"User"> | string
+    targetExam?: StringNullableWithAggregatesFilter<"User"> | string | null
+    onboardingCompleted?: BoolWithAggregatesFilter<"User"> | boolean
+    isPremium?: BoolWithAggregatesFilter<"User"> | boolean
+    isBot?: BoolWithAggregatesFilter<"User"> | boolean
+    skillRating?: IntWithAggregatesFilter<"User"> | number
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -4030,6 +5317,7 @@ export namespace Prisma {
     totalQuestions?: IntFilter<"ExamResult"> | number
     correctAnswers?: IntFilter<"ExamResult"> | number
     timeTaken?: IntFilter<"ExamResult"> | number
+    duelId?: StringNullableFilter<"ExamResult"> | string | null
     timestamp?: DateTimeFilter<"ExamResult"> | Date | string
   }
 
@@ -4041,6 +5329,7 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+    duelId?: SortOrderInput | SortOrder
     timestamp?: SortOrder
   }
 
@@ -4055,6 +5344,7 @@ export namespace Prisma {
     totalQuestions?: IntFilter<"ExamResult"> | number
     correctAnswers?: IntFilter<"ExamResult"> | number
     timeTaken?: IntFilter<"ExamResult"> | number
+    duelId?: StringNullableFilter<"ExamResult"> | string | null
     timestamp?: DateTimeFilter<"ExamResult"> | Date | string
   }, "id">
 
@@ -4066,6 +5356,7 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+    duelId?: SortOrderInput | SortOrder
     timestamp?: SortOrder
     _count?: ExamResultCountOrderByAggregateInput
     _avg?: ExamResultAvgOrderByAggregateInput
@@ -4085,69 +5376,183 @@ export namespace Prisma {
     totalQuestions?: IntWithAggregatesFilter<"ExamResult"> | number
     correctAnswers?: IntWithAggregatesFilter<"ExamResult"> | number
     timeTaken?: IntWithAggregatesFilter<"ExamResult"> | number
+    duelId?: StringNullableWithAggregatesFilter<"ExamResult"> | string | null
     timestamp?: DateTimeWithAggregatesFilter<"ExamResult"> | Date | string
+  }
+
+  export type DuelWhereInput = {
+    AND?: DuelWhereInput | DuelWhereInput[]
+    OR?: DuelWhereInput[]
+    NOT?: DuelWhereInput | DuelWhereInput[]
+    id?: StringFilter<"Duel"> | string
+    player1Id?: StringFilter<"Duel"> | string
+    player2Id?: StringNullableFilter<"Duel"> | string | null
+    winnerId?: StringNullableFilter<"Duel"> | string | null
+    category?: StringFilter<"Duel"> | string
+    subject?: StringFilter<"Duel"> | string
+    variant?: StringFilter<"Duel"> | string
+    status?: StringFilter<"Duel"> | string
+    questions?: StringNullableFilter<"Duel"> | string | null
+    player1Progress?: StringNullableFilter<"Duel"> | string | null
+    player2Progress?: StringNullableFilter<"Duel"> | string | null
+    createdAt?: DateTimeFilter<"Duel"> | Date | string
+    updatedAt?: DateTimeFilter<"Duel"> | Date | string
+  }
+
+  export type DuelOrderByWithRelationInput = {
+    id?: SortOrder
+    player1Id?: SortOrder
+    player2Id?: SortOrderInput | SortOrder
+    winnerId?: SortOrderInput | SortOrder
+    category?: SortOrder
+    subject?: SortOrder
+    variant?: SortOrder
+    status?: SortOrder
+    questions?: SortOrderInput | SortOrder
+    player1Progress?: SortOrderInput | SortOrder
+    player2Progress?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DuelWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DuelWhereInput | DuelWhereInput[]
+    OR?: DuelWhereInput[]
+    NOT?: DuelWhereInput | DuelWhereInput[]
+    player1Id?: StringFilter<"Duel"> | string
+    player2Id?: StringNullableFilter<"Duel"> | string | null
+    winnerId?: StringNullableFilter<"Duel"> | string | null
+    category?: StringFilter<"Duel"> | string
+    subject?: StringFilter<"Duel"> | string
+    variant?: StringFilter<"Duel"> | string
+    status?: StringFilter<"Duel"> | string
+    questions?: StringNullableFilter<"Duel"> | string | null
+    player1Progress?: StringNullableFilter<"Duel"> | string | null
+    player2Progress?: StringNullableFilter<"Duel"> | string | null
+    createdAt?: DateTimeFilter<"Duel"> | Date | string
+    updatedAt?: DateTimeFilter<"Duel"> | Date | string
+  }, "id">
+
+  export type DuelOrderByWithAggregationInput = {
+    id?: SortOrder
+    player1Id?: SortOrder
+    player2Id?: SortOrderInput | SortOrder
+    winnerId?: SortOrderInput | SortOrder
+    category?: SortOrder
+    subject?: SortOrder
+    variant?: SortOrder
+    status?: SortOrder
+    questions?: SortOrderInput | SortOrder
+    player1Progress?: SortOrderInput | SortOrder
+    player2Progress?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: DuelCountOrderByAggregateInput
+    _max?: DuelMaxOrderByAggregateInput
+    _min?: DuelMinOrderByAggregateInput
+  }
+
+  export type DuelScalarWhereWithAggregatesInput = {
+    AND?: DuelScalarWhereWithAggregatesInput | DuelScalarWhereWithAggregatesInput[]
+    OR?: DuelScalarWhereWithAggregatesInput[]
+    NOT?: DuelScalarWhereWithAggregatesInput | DuelScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Duel"> | string
+    player1Id?: StringWithAggregatesFilter<"Duel"> | string
+    player2Id?: StringNullableWithAggregatesFilter<"Duel"> | string | null
+    winnerId?: StringNullableWithAggregatesFilter<"Duel"> | string | null
+    category?: StringWithAggregatesFilter<"Duel"> | string
+    subject?: StringWithAggregatesFilter<"Duel"> | string
+    variant?: StringWithAggregatesFilter<"Duel"> | string
+    status?: StringWithAggregatesFilter<"Duel"> | string
+    questions?: StringNullableWithAggregatesFilter<"Duel"> | string | null
+    player1Progress?: StringNullableWithAggregatesFilter<"Duel"> | string | null
+    player2Progress?: StringNullableWithAggregatesFilter<"Duel"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Duel"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Duel"> | Date | string
   }
 
   export type QuestionCreateInput = {
     id?: string
     category: string
+    subject?: string
     text: string
     options: string
     correctIndex: number
+    explanation?: string | null
+    difficulty?: string
     createdAt?: Date | string
   }
 
   export type QuestionUncheckedCreateInput = {
     id?: string
     category: string
+    subject?: string
     text: string
     options: string
     correctIndex: number
+    explanation?: string | null
+    difficulty?: string
     createdAt?: Date | string
   }
 
   export type QuestionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
     correctIndex?: IntFieldUpdateOperationsInput | number
+    explanation?: NullableStringFieldUpdateOperationsInput | string | null
+    difficulty?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuestionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
     correctIndex?: IntFieldUpdateOperationsInput | number
+    explanation?: NullableStringFieldUpdateOperationsInput | string | null
+    difficulty?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuestionCreateManyInput = {
     id?: string
     category: string
+    subject?: string
     text: string
     options: string
     correctIndex: number
+    explanation?: string | null
+    difficulty?: string
     createdAt?: Date | string
   }
 
   export type QuestionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
     correctIndex?: IntFieldUpdateOperationsInput | number
+    explanation?: NullableStringFieldUpdateOperationsInput | string | null
+    difficulty?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuestionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     options?: StringFieldUpdateOperationsInput | string
     correctIndex?: IntFieldUpdateOperationsInput | number
+    explanation?: NullableStringFieldUpdateOperationsInput | string | null
+    difficulty?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4156,6 +5561,11 @@ export namespace Prisma {
     username: string
     passwordHash: string
     role?: string
+    targetExam?: string | null
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: number
     createdAt?: Date | string
   }
 
@@ -4164,6 +5574,11 @@ export namespace Prisma {
     username: string
     passwordHash: string
     role?: string
+    targetExam?: string | null
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: number
     createdAt?: Date | string
   }
 
@@ -4172,6 +5587,11 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    targetExam?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
+    isPremium?: BoolFieldUpdateOperationsInput | boolean
+    isBot?: BoolFieldUpdateOperationsInput | boolean
+    skillRating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4180,6 +5600,11 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    targetExam?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
+    isPremium?: BoolFieldUpdateOperationsInput | boolean
+    isBot?: BoolFieldUpdateOperationsInput | boolean
+    skillRating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4188,6 +5613,11 @@ export namespace Prisma {
     username: string
     passwordHash: string
     role?: string
+    targetExam?: string | null
+    onboardingCompleted?: boolean
+    isPremium?: boolean
+    isBot?: boolean
+    skillRating?: number
     createdAt?: Date | string
   }
 
@@ -4196,6 +5626,11 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    targetExam?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
+    isPremium?: BoolFieldUpdateOperationsInput | boolean
+    isBot?: BoolFieldUpdateOperationsInput | boolean
+    skillRating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4204,6 +5639,11 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
+    targetExam?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
+    isPremium?: BoolFieldUpdateOperationsInput | boolean
+    isBot?: BoolFieldUpdateOperationsInput | boolean
+    skillRating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4215,6 +5655,7 @@ export namespace Prisma {
     totalQuestions: number
     correctAnswers: number
     timeTaken: number
+    duelId?: string | null
     timestamp?: Date | string
   }
 
@@ -4226,6 +5667,7 @@ export namespace Prisma {
     totalQuestions: number
     correctAnswers: number
     timeTaken: number
+    duelId?: string | null
     timestamp?: Date | string
   }
 
@@ -4237,6 +5679,7 @@ export namespace Prisma {
     totalQuestions?: IntFieldUpdateOperationsInput | number
     correctAnswers?: IntFieldUpdateOperationsInput | number
     timeTaken?: IntFieldUpdateOperationsInput | number
+    duelId?: NullableStringFieldUpdateOperationsInput | string | null
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4248,6 +5691,7 @@ export namespace Prisma {
     totalQuestions?: IntFieldUpdateOperationsInput | number
     correctAnswers?: IntFieldUpdateOperationsInput | number
     timeTaken?: IntFieldUpdateOperationsInput | number
+    duelId?: NullableStringFieldUpdateOperationsInput | string | null
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4259,6 +5703,7 @@ export namespace Prisma {
     totalQuestions: number
     correctAnswers: number
     timeTaken: number
+    duelId?: string | null
     timestamp?: Date | string
   }
 
@@ -4270,6 +5715,7 @@ export namespace Prisma {
     totalQuestions?: IntFieldUpdateOperationsInput | number
     correctAnswers?: IntFieldUpdateOperationsInput | number
     timeTaken?: IntFieldUpdateOperationsInput | number
+    duelId?: NullableStringFieldUpdateOperationsInput | string | null
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4281,7 +5727,120 @@ export namespace Prisma {
     totalQuestions?: IntFieldUpdateOperationsInput | number
     correctAnswers?: IntFieldUpdateOperationsInput | number
     timeTaken?: IntFieldUpdateOperationsInput | number
+    duelId?: NullableStringFieldUpdateOperationsInput | string | null
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DuelCreateInput = {
+    id?: string
+    player1Id: string
+    player2Id?: string | null
+    winnerId?: string | null
+    category: string
+    subject?: string
+    variant?: string
+    status?: string
+    questions?: string | null
+    player1Progress?: string | null
+    player2Progress?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DuelUncheckedCreateInput = {
+    id?: string
+    player1Id: string
+    player2Id?: string | null
+    winnerId?: string | null
+    category: string
+    subject?: string
+    variant?: string
+    status?: string
+    questions?: string | null
+    player1Progress?: string | null
+    player2Progress?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DuelUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    player1Id?: StringFieldUpdateOperationsInput | string
+    player2Id?: NullableStringFieldUpdateOperationsInput | string | null
+    winnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    variant?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    questions?: NullableStringFieldUpdateOperationsInput | string | null
+    player1Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    player2Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DuelUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    player1Id?: StringFieldUpdateOperationsInput | string
+    player2Id?: NullableStringFieldUpdateOperationsInput | string | null
+    winnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    variant?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    questions?: NullableStringFieldUpdateOperationsInput | string | null
+    player1Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    player2Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DuelCreateManyInput = {
+    id?: string
+    player1Id: string
+    player2Id?: string | null
+    winnerId?: string | null
+    category: string
+    subject?: string
+    variant?: string
+    status?: string
+    questions?: string | null
+    player1Progress?: string | null
+    player2Progress?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DuelUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    player1Id?: StringFieldUpdateOperationsInput | string
+    player2Id?: NullableStringFieldUpdateOperationsInput | string | null
+    winnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    variant?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    questions?: NullableStringFieldUpdateOperationsInput | string | null
+    player1Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    player2Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DuelUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    player1Id?: StringFieldUpdateOperationsInput | string
+    player2Id?: NullableStringFieldUpdateOperationsInput | string | null
+    winnerId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    variant?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    questions?: NullableStringFieldUpdateOperationsInput | string | null
+    player1Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    player2Progress?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -4310,6 +5869,21 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4321,12 +5895,20 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
   export type QuestionCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    subject?: SortOrder
     text?: SortOrder
     options?: SortOrder
     correctIndex?: SortOrder
+    explanation?: SortOrder
+    difficulty?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -4337,18 +5919,24 @@ export namespace Prisma {
   export type QuestionMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    subject?: SortOrder
     text?: SortOrder
     options?: SortOrder
     correctIndex?: SortOrder
+    explanation?: SortOrder
+    difficulty?: SortOrder
     createdAt?: SortOrder
   }
 
   export type QuestionMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    subject?: SortOrder
     text?: SortOrder
     options?: SortOrder
     correctIndex?: SortOrder
+    explanation?: SortOrder
+    difficulty?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -4390,6 +5978,24 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4404,12 +6010,26 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    targetExam?: SortOrder
+    onboardingCompleted?: SortOrder
+    isPremium?: SortOrder
+    isBot?: SortOrder
+    skillRating?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    skillRating?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -4417,6 +6037,11 @@ export namespace Prisma {
     username?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    targetExam?: SortOrder
+    onboardingCompleted?: SortOrder
+    isPremium?: SortOrder
+    isBot?: SortOrder
+    skillRating?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -4425,7 +6050,24 @@ export namespace Prisma {
     username?: SortOrder
     passwordHash?: SortOrder
     role?: SortOrder
+    targetExam?: SortOrder
+    onboardingCompleted?: SortOrder
+    isPremium?: SortOrder
+    isBot?: SortOrder
+    skillRating?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    skillRating?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type ExamResultCountOrderByAggregateInput = {
@@ -4436,6 +6078,7 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+    duelId?: SortOrder
     timestamp?: SortOrder
   }
 
@@ -4454,6 +6097,7 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+    duelId?: SortOrder
     timestamp?: SortOrder
   }
 
@@ -4465,6 +6109,7 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+    duelId?: SortOrder
     timestamp?: SortOrder
   }
 
@@ -4473,6 +6118,54 @@ export namespace Prisma {
     totalQuestions?: SortOrder
     correctAnswers?: SortOrder
     timeTaken?: SortOrder
+  }
+
+  export type DuelCountOrderByAggregateInput = {
+    id?: SortOrder
+    player1Id?: SortOrder
+    player2Id?: SortOrder
+    winnerId?: SortOrder
+    category?: SortOrder
+    subject?: SortOrder
+    variant?: SortOrder
+    status?: SortOrder
+    questions?: SortOrder
+    player1Progress?: SortOrder
+    player2Progress?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DuelMaxOrderByAggregateInput = {
+    id?: SortOrder
+    player1Id?: SortOrder
+    player2Id?: SortOrder
+    winnerId?: SortOrder
+    category?: SortOrder
+    subject?: SortOrder
+    variant?: SortOrder
+    status?: SortOrder
+    questions?: SortOrder
+    player1Progress?: SortOrder
+    player2Progress?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DuelMinOrderByAggregateInput = {
+    id?: SortOrder
+    player1Id?: SortOrder
+    player2Id?: SortOrder
+    winnerId?: SortOrder
+    category?: SortOrder
+    subject?: SortOrder
+    variant?: SortOrder
+    status?: SortOrder
+    questions?: SortOrder
+    player1Progress?: SortOrder
+    player2Progress?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -4487,8 +6180,16 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -4514,6 +6215,20 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -4571,6 +6286,34 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4583,6 +6326,19 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
 
@@ -4602,6 +6358,10 @@ export namespace Prisma {
      * @deprecated Use ExamResultDefaultArgs instead
      */
     export type ExamResultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ExamResultDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DuelDefaultArgs instead
+     */
+    export type DuelArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DuelDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

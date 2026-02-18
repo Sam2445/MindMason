@@ -125,9 +125,12 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.QuestionScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  subject: 'subject',
   text: 'text',
   options: 'options',
   correctIndex: 'correctIndex',
+  explanation: 'explanation',
+  difficulty: 'difficulty',
   createdAt: 'createdAt'
 };
 
@@ -136,6 +139,11 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   passwordHash: 'passwordHash',
   role: 'role',
+  targetExam: 'targetExam',
+  onboardingCompleted: 'onboardingCompleted',
+  isPremium: 'isPremium',
+  isBot: 'isBot',
+  skillRating: 'skillRating',
   createdAt: 'createdAt'
 };
 
@@ -147,7 +155,24 @@ exports.Prisma.ExamResultScalarFieldEnum = {
   totalQuestions: 'totalQuestions',
   correctAnswers: 'correctAnswers',
   timeTaken: 'timeTaken',
+  duelId: 'duelId',
   timestamp: 'timestamp'
+};
+
+exports.Prisma.DuelScalarFieldEnum = {
+  id: 'id',
+  player1Id: 'player1Id',
+  player2Id: 'player2Id',
+  winnerId: 'winnerId',
+  category: 'category',
+  subject: 'subject',
+  variant: 'variant',
+  status: 'status',
+  questions: 'questions',
+  player1Progress: 'player1Progress',
+  player2Progress: 'player2Progress',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -160,11 +185,17 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
   Question: 'Question',
   User: 'User',
-  ExamResult: 'ExamResult'
+  ExamResult: 'ExamResult',
+  Duel: 'Duel'
 };
 
 /**

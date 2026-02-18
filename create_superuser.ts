@@ -1,4 +1,3 @@
-
 import { createRequire } from "node:module";
 import * as bcrypt from "npm:bcryptjs";
 
@@ -10,7 +9,9 @@ const username = Deno.args[0];
 const password = Deno.args[1];
 
 if (!username || !password) {
-  console.log("Usage: deno run -A --unstable-kv create_superuser.ts <username> <password>");
+  console.log(
+    "Usage: deno run -A --unstable-kv create_superuser.ts <username> <password>",
+  );
   Deno.exit(1);
 }
 
@@ -22,14 +23,14 @@ try {
   const user = await prisma.user.upsert({
     where: { username },
     update: {
-        passwordHash: hash,
-        role: "SUPERUSER"
+      passwordHash: hash,
+      role: "SUPERUSER",
     },
     create: {
       username,
       passwordHash: hash,
-      role: "SUPERUSER"
-    }
+      role: "SUPERUSER",
+    },
   });
   console.log(`✅ Superuser '${user.username}' created successfully!`);
 } catch (e) {
