@@ -18,43 +18,51 @@ await run(["deno", "run", "-A", "npm:prisma", "generate"]);
 
 // 2. Fix CommonJS Issue
 console.log("🔧 Fixing CommonJS Compatibility...");
-const indexPath = "generated/client/index.js";
-const indexCjsPath = "generated/client/index.cjs";
 const packagePath = "generated/client/package.json";
 
 try {
   // Rename index.js -> index.cjs if needed
+  // SKIPPED: Renaming causes issues with utils/db.ts import. 
+  // We rely on package.json "type": "commonjs" instead.
+  /*
   try {
     await Deno.rename(indexPath, indexCjsPath);
     console.log("  - Renamed index.js to index.cjs");
-  } catch (e) {
-    if (!(e instanceof Deno.errors.NotFound)) {
-      // Only error if it's NOT a "not found" error. If it's effectively already renamed, we proceed.
-      // But actually, generate creates index.js.
-      console.log(
-        "  - index.js not found, skipping rename (or already renamed).",
-      );
-    }
-  }
+  } catch (e) { ... }
+  */
 
   // Patch package.json
   const pkg = JSON.parse(await Deno.readTextFile(packagePath));
+  let changed = false;
+
   if (pkg.type !== "commonjs") {
     pkg.type = "commonjs";
-    pkg.main = "index.cjs";
-    if (pkg.exports) {
-      // recursive replace .js -> .cjs in exports
-      const replaceExt = (obj: Record<string, unknown>) => {
-        for (const key in obj) {
-          if (typeof obj[key] === "string") {
-            obj[key] = (obj[key] as string).replace(/\.js$/, ".cjs");
-          } else if (typeof obj[key] === "object" && obj[key] !== null) {
-            replaceExt(obj[key] as Record<string, unknown>);
+    changed = true;
+  }
+  
+  // Ensure main points to index.js since we aren't renaming
+  if (pkg.main !== "index.js") {
+      pkg.main = "index.js";
+      changed = true;
+  }
+  
+  // Clean up exports if they point to .cjs (from previous runs or manual edits)
+  if (pkg.exports) {
+      // deno-lint-ignore no-explicit-any
+      const fixExt = (obj: any) => {
+          for (const key in obj) {
+              if (typeof obj[key] === 'string') {
+                  obj[key] = obj[key].replace(/\.cjs$/, ".js");
+              } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                  fixExt(obj[key]);
+              }
           }
-        }
       };
-      replaceExt(pkg.exports as Record<string, unknown>);
-    }
+      fixExt(pkg.exports);
+      changed = true; 
+  }
+
+  if (changed) {
     await Deno.writeTextFile(packagePath, JSON.stringify(pkg, null, 2));
     console.log("  - Updated package.json with type: commonjs");
   } else {
@@ -67,6 +75,6 @@ try {
 
 // 3. Build Fresh App
 console.log("🏗️  Building Fresh App...");
-await run(["deno", "run", "-A", "--unstable-kv", "dev.ts", "build"]);
+await run(["deno", "run", "-A", "--unstable-kv", "--unstable-detect-cjs", "dev.ts", "build"]);
 
 console.log("✅ Build Complete!");
