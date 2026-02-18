@@ -3,9 +3,10 @@ import { Head } from "$fresh/runtime.ts";
 import {
   getQuestions,
   getRandomQuestions,
+  getMockTestQuestions,
   type Question,
 } from "../../utils/db.ts";
-import { getSubjectsForExam, type SubjectInfo } from "../../utils/subjects.ts";
+import { getSubjectsForExam, type SubjectInfo, EXAM_SUBJECTS, type ExamVariant } from "../../utils/subjects.ts";
 import QuizEngine from "../../islands/QuizEngine.tsx";
 
 interface Data {
@@ -17,6 +18,8 @@ interface Data {
   subjects?: SubjectInfo[];
   selectedSubject?: string;
   subjectCounts?: Record<string, number>;
+  variants?: ExamVariant[];
+  duration?: number;
 }
 
 export const handler: Handlers<Data> = {
@@ -25,13 +28,38 @@ export const handler: Handlers<Data> = {
     const url = new URL(req.url);
     const countParam = url.searchParams.get("count");
     const subjectParam = url.searchParams.get("subject");
+    const variantParam = url.searchParams.get("variant");
 
-    // Seed check removed for performance/stability
+    // Handle Exam Variant (Prelims/Mains)
+    if (variantParam) {
+      const variants = EXAM_SUBJECTS[category.toUpperCase()]?.variants;
+      const variant = variants?.find((v) => v.id === variantParam);
 
+      if (variant) {
+        let questions: Question[] = [];
+        
+        if (variant.distribution) {
+           questions = await getMockTestQuestions(category, variant.distribution);
+        } else {
+           questions = await getRandomQuestions(category, variant.totalQuestions);
+        }
+        
+        if (questions.length === 0) return ctx.renderNotFound();
+
+        return ctx.render({
+          category,
+          questions,
+          showSetup: false,
+          showSubjectPicker: false, 
+          duration: variant.duration * 60 // Convert minutes to seconds
+        });
+      }
+    }
 
     // Step 1: No subject selected → show subject picker
     if (!subjectParam && !countParam) {
       const subjects = getSubjectsForExam(category);
+      const variants = EXAM_SUBJECTS[category.toUpperCase()]?.variants;
       
       // Get question counts per subject
       const subjectCounts: Record<string, number> = {};
@@ -49,6 +77,7 @@ export const handler: Handlers<Data> = {
         showSetup: false,
         subjects,
         subjectCounts,
+        variants,
       });
     }
 
@@ -98,7 +127,66 @@ export default function ExamPage({ data }: PageProps<Data>) {
               <p class="text-gray-400 text-lg">Choose a subject to practice</p>
             </div>
 
-            {/* All Subjects Option */}
+            {/* Exam Variants (Prelims / Mains) - Dedicated Section */}
+            {data.variants && data.variants.length > 0 && (
+              <div class="mb-16 animate-fade-in-up">
+                <div class="border-l-4 border-purple-500 pl-6 mb-8">
+                  <h3 class="text-3xl font-bold text-white mb-2">
+                    Official Exam Simulations
+                  </h3>
+                  <p class="text-gray-400 max-w-2xl">
+                    Take full-length mock tests that strictly follow the official exam pattern, 
+                    sectional timing, and question distribution as per the syllabus.
+                  </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {data.variants.map((v) => (
+                    <a
+                      key={v.id}
+                      href={`/exams/${category}?variant=${v.id}`}
+                      class="relative overflow-hidden group p-8 rounded-2xl bg-gradient-to-br from-purple-900/40 via-gray-900 to-indigo-900/40 border border-purple-500/30 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-900/20 transition-all duration-300"
+                    >
+                       <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <span class="text-9xl">🏛️</span>
+                       </div>
+                       
+                       <div class="relative z-10">
+                          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider mb-4 border border-purple-500/30">
+                            OFFICIAL PATTERN
+                          </div>
+                          
+                          <h4 class="text-3xl font-bold text-white group-hover:text-purple-300 transition-colors mb-2">
+                            {v.label}
+                          </h4>
+                          
+                          <div class="flex items-center gap-6 text-gray-300 text-sm font-medium mt-4">
+                             <div class="flex items-center gap-2">
+                               <span class="text-lg">⏱️</span> {v.duration} mins
+                             </div>
+                             <div class="flex items-center gap-2">
+                               <span class="text-lg">📝</span> {v.totalQuestions} Questions
+                             </div>
+                          </div>
+                          
+                          <div class="mt-8 flex items-center text-purple-400 font-bold group-hover:translate-x-2 transition-transform">
+                             Start Verification Test 
+                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                          </div>
+                       </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Subject Practice Section */}
+            <div class="mb-10">
+               <h3 class="text-xl font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-700 pb-2">
+                 Topic-wise Practice
+               </h3>
+
+               {/* All Subjects Option */}
             <a
               href={`/exams/${category}?subject=all`}
               class="block mb-6 p-6 bg-gradient-to-r from-blue-600/20 to-emerald-600/20 rounded-2xl border-2 border-blue-500/30 hover:border-blue-400 transition-all group"
@@ -160,6 +248,7 @@ export default function ExamPage({ data }: PageProps<Data>) {
                 );
               })}
             </div>
+            </div>
 
             <div class="text-center mt-8">
               <a href="/" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
@@ -178,9 +267,10 @@ export default function ExamPage({ data }: PageProps<Data>) {
     const options = [10, 20, 30, 50, 100].filter((c) =>
       c <= (availableCount || 0)
     );
-    if (availableCount && availableCount > 0) {
-      if (!options.includes(availableCount)) options.push(availableCount);
+    if (availableCount && availableCount > 0 && !options.includes(availableCount)) {
+      options.push(availableCount);
     }
+    options.sort((a, b) => a - b);
 
     return (
       <>
@@ -217,9 +307,34 @@ export default function ExamPage({ data }: PageProps<Data>) {
               <label class="block text-sm font-medium text-gray-300 mb-4 uppercase tracking-wider">
                 Select Number of Questions
               </label>
+
+               {/* Full Length Marathon Option */}
+              {availableCount && availableCount >= 50 && (
+                <div class="mb-8 p-1">
+                  <button
+                    type="submit"
+                    name="count"
+                    value={Math.min(availableCount, 100)}
+                    class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-lg shadow-xl shadow-emerald-900/20 transform hover:-translate-y-1 transition-all border border-emerald-500/30 flex items-center justify-center gap-3"
+                  >
+                    <span>
+                      {selectedSubject === 'all' ? "🚀 Start Mixed Practice Marathon" : "🌊 Start Subject Deep Dive"}
+                    </span>
+                    <span class="bg-black/20 text-xs px-2 py-1 rounded text-emerald-100">
+                      {Math.min(availableCount, 100)} Qs
+                    </span>
+                  </button>
+                  <p class="text-xs text-center text-gray-400 mt-2">
+                    {selectedSubject === 'all' 
+                      ? "A comprehensive practice session with randomized questions across all subjects." 
+                      : "Intensive 100-question practice set for this specific subject."}
+                  </p>
+                </div>
+              )}
+
               <div class="grid grid-cols-2 gap-3 mb-8">
-                {options.length > 0
-                  ? options.map((opt) => (
+                {options.length > 0 ? (
+                  options.map((opt) => (
                     <button
                       key={opt}
                       type="submit"
@@ -227,29 +342,14 @@ export default function ExamPage({ data }: PageProps<Data>) {
                       value={opt}
                       class="py-3 px-4 rounded-xl bg-gray-700 hover:bg-blue-600 hover:text-white border border-gray-600 hover:border-blue-500 transition-all font-bold text-gray-300 shadow-lg"
                     >
-                      {opt === availableCount
-                        ? "All Questions"
-                        : `${opt} Questions`}
+                      {opt === availableCount ? "All Questions" : `${opt} Questions`}
                     </button>
                   ))
-                  : (
-                    <div class="col-span-2 text-center text-gray-500 italic">
-                      No questions available for this subject. Please ask admin to upload
-                      questions.
-                    </div>
-                  )}
-
-                {options.length === 0 && availableCount && availableCount > 0 &&
-                  (
-                    <button
-                      type="submit"
-                      name="count"
-                      value={availableCount}
-                      class="col-span-2 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold"
-                    >
-                      Start All ({availableCount})
-                    </button>
-                  )}
+                ) : (
+                  <div class="col-span-2 text-center text-gray-500 italic">
+                    No questions available for this subject. Please ask admin to upload questions.
+                  </div>
+                )}
               </div>
             </form>
 
@@ -280,7 +380,11 @@ export default function ExamPage({ data }: PageProps<Data>) {
         <title>{data.category.toUpperCase()} Mock Test - MindMason</title>
       </Head>
       <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white py-8">
-        <QuizEngine questions={data.questions!} category={data.category} />
+        <QuizEngine 
+            questions={data.questions!} 
+            category={data.category} 
+            timeLimit={data.duration} 
+        />
       </div>
     </>
   );

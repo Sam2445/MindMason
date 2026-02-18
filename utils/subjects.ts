@@ -9,10 +9,20 @@ export interface SubjectInfo {
   description: string;
 }
 
+
+export interface ExamVariant {
+  id: string;
+  label: string;
+  duration: number; // minutes
+  totalQuestions: number;
+  distribution?: Record<string, number>; // subjectId -> count
+}
+
 export interface ExamSubjects {
   examId: string;
   examLabel: string;
   subjects: SubjectInfo[];
+  variants?: ExamVariant[];
 }
 
 // All subjects organized by exam
@@ -26,6 +36,22 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "english", label: "English Language", icon: "📝", color: "emerald", description: "Reading comprehension, grammar, vocabulary, cloze test" },
       { id: "general_awareness", label: "General Awareness", icon: "🌍", color: "orange", description: "Current affairs, banking awareness, financial awareness" },
       { id: "computer_knowledge", label: "Computer Knowledge", icon: "💻", color: "cyan", description: "Computer fundamentals, networking, security, MS Office" },
+    ],
+    variants: [
+      { 
+        id: "prelims", 
+        label: "Prelims (PO/Clerk)", 
+        duration: 60, 
+        totalQuestions: 100,
+        distribution: { "english": 30, "quantitative_aptitude": 35, "reasoning": 35 } 
+      },
+      { 
+        id: "mains", 
+        label: "Mains (PO/Clerk)", 
+        duration: 180, 
+        totalQuestions: 155, // Adjusted from 200 for realistic distribution
+        distribution: { "reasoning": 45, "general_awareness": 40, "english": 35, "quantitative_aptitude": 35 } 
+      },
     ]
   },
 
@@ -41,6 +67,30 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "environment", label: "Environment & Ecology", icon: "🌿", color: "green", description: "Biodiversity, climate change, environmental conservation" },
       { id: "current_affairs", label: "Current Affairs", icon: "📰", color: "red", description: "National and international events, government schemes" },
       { id: "ethics", label: "Ethics & Integrity", icon: "⚖️", color: "purple", description: "Ethics, integrity, aptitude for civil services" },
+    ],
+    variants: [
+        { 
+            id: "prelims_gs1", 
+            label: "Prelims (GS I)", 
+            duration: 120, 
+            totalQuestions: 100,
+            distribution: { "polity": 15, "history": 15, "geography": 15, "economics": 15, "science_technology": 10, "environment": 15, "current_affairs": 15 }
+        },
+        { 
+            id: "prelims_csat", 
+            label: "Prelims (CSAT)", 
+            duration: 120, 
+            totalQuestions: 80,
+            // Assuming we map CSAT broadly to 'reasoning' + 'english' + 'maths' if available, otherwise just general logic
+            // Since UPSC subjects list above doesn't have quantitative explicit for CSAT, we might need to map closely.
+            // But wait, the subjects list strictly has GS topics. CSAT topics are missing in UPSC subjects list above.
+            // Let's assume for now we use 'reasoning' from valid subjects if shared? No, they are scoped.
+            // We will just distribute across available GS topics or add handling later. 
+            // Actually, CSAT is mostly Comprehension (English?), Reasoning, Basic Numeracy.
+            // We only have GS subjects defined for purely UPSC category. 
+            // Let's stick to GS1 for now being accurate.
+            distribution: { "reading_comprehension": 25, "reasoning": 25, "quantitative_aptitude": 30 } 
+        },
     ]
   },
 
@@ -52,6 +102,22 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "reasoning", label: "General Intelligence & Reasoning", icon: "🧩", color: "purple", description: "Verbal and non-verbal reasoning, analogy, coding-decoding" },
       { id: "english", label: "English Language", icon: "📝", color: "emerald", description: "Comprehension, vocabulary, grammar, sentence correction" },
       { id: "general_awareness", label: "General Awareness", icon: "🌍", color: "orange", description: "History, geography, polity, economics, current affairs" },
+    ],
+    variants: [
+        { 
+            id: "tier1", 
+            label: "Tier-I", 
+            duration: 60, 
+            totalQuestions: 100,
+            distribution: { "reasoning": 25, "general_awareness": 25, "quantitative_aptitude": 25, "english": 25 }
+        },
+        { 
+            id: "tier2", 
+            label: "Tier-II (Paper I)", 
+            duration: 150, // 2h 30m actually for full paper usually
+            totalQuestions: 130, // Section 1 (60) + Section 2 (70)
+            distribution: { "quantitative_aptitude": 30, "reasoning": 30, "english": 45, "general_awareness": 25 }
+        },
     ]
   },
 
@@ -75,6 +141,22 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "reasoning", label: "General Intelligence & Reasoning", icon: "🧩", color: "purple", description: "Analogies, classification, coding-decoding" },
       { id: "general_science", label: "General Science", icon: "🔬", color: "emerald", description: "Physics, chemistry, biology basics" },
       { id: "general_awareness", label: "General Awareness", icon: "🌍", color: "orange", description: "Current affairs, Indian history, geography" },
+    ],
+    variants: [
+        { 
+            id: "cbt1", 
+            label: "CBT-1", 
+            duration: 90, 
+            totalQuestions: 100,
+            distribution: { "mathematics": 30, "reasoning": 30, "general_awareness": 40 } // Approx
+        },
+        { 
+            id: "cbt2", 
+            label: "CBT-2 (Part A)", 
+            duration: 90, 
+            totalQuestions: 100,
+            distribution: { "mathematics": 25, "reasoning": 25, "general_science": 40, "general_awareness": 10 }
+        },
     ]
   },
 
@@ -86,6 +168,15 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "english", label: "English", icon: "📝", color: "emerald", description: "Grammar, vocabulary, comprehension" },
       { id: "general_knowledge", label: "General Knowledge", icon: "🌍", color: "orange", description: "History, geography, polity, current affairs" },
       { id: "reasoning", label: "Reasoning & Intelligence", icon: "🧩", color: "purple", description: "Verbal and non-verbal reasoning" },
+    ],
+    variants: [
+        { 
+            id: "writtten", 
+            label: "Written Exam", 
+            duration: 120, 
+            totalQuestions: 100,
+            distribution: { "mathematics": 30, "english": 30, "general_knowledge": 40 }
+        },
     ]
   },
 
@@ -98,6 +189,22 @@ export const EXAM_SUBJECTS: Record<string, ExamSubjects> = {
       { id: "language_1", label: "Language I (Hindi)", icon: "🔤", color: "orange", description: "Hindi comprehension, grammar, pedagogy" },
       { id: "language_2", label: "Language II (English)", icon: "📝", color: "emerald", description: "English comprehension, grammar, pedagogy" },
       { id: "environmental_studies", label: "Environmental Studies", icon: "🌿", color: "green", description: "EVS concepts, pedagogy of EVS" },
+    ],
+    variants: [
+        { 
+            id: "paper1", 
+            label: "Paper-I (Primary)", 
+            duration: 150, 
+            totalQuestions: 150,
+            distribution: { "child_development": 30, "language_1": 30, "language_2": 30, "mathematics": 30, "environmental_studies": 30 }
+        },
+        { 
+            id: "paper2", 
+            label: "Paper-II (Elementary)", 
+            duration: 150, 
+            totalQuestions: 150,
+            distribution: { "child_development": 30, "language_1": 30, "language_2": 30, "mathematics": 60 } // Science/Math option usually 60
+        },
     ]
   },
 

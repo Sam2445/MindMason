@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef } from "preact/hooks";
+import { useEffect, useState, useRef, useMemo } from "preact/hooks";
 import Timer from "./Timer.tsx";
 import QuestionPalette from "./QuestionPalette.tsx";
 import { type Question } from "../utils/db.ts";
@@ -10,9 +10,10 @@ interface QuizEngineProps {
   duelId?: string;
   variant?: string;
   userId?: string;
+  timeLimit?: number; // Optional custom duration in seconds
 }
 
-export default function QuizEngine({ questions, category, duelId, variant = "STANDARD", userId }: QuizEngineProps) {
+export default function QuizEngine({ questions, category, duelId, variant = "STANDARD", userId, timeLimit }: QuizEngineProps) {
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -74,11 +75,27 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
 
   // Persistence state
   const [hydrated, setHydrated] = useState(false);
-  const [initialTime, setInitialTime] = useState(60 * 10); // Default 10 mins for mock
+  // Default time: Use provided timeLimit OR 1 min per question (min 10 mins)
+  const defaultTime = timeLimit || Math.max(60 * 10, questions.length * 60);
+  const [initialTime, setInitialTime] = useState(defaultTime); 
+  const [startTime, setStartTime] = useState<number>(Date.now());
 
   // Derive current question
   const currentQuestion = questions[currentIdx];
   const isLast = currentIdx === questions.length - 1;
+
+  // Sections logic
+  const sections = useMemo(() => {
+     const distinct = [...new Set(questions.map(q => q.subject || "general"))];
+     return distinct.sort();
+  }, [questions]);
+
+  const currentSection = currentQuestion?.subject || "general";
+
+  const jumpToSection = (subject: string) => {
+      const idx = questions.findIndex(q => (q.subject || "general") === subject);
+      if (idx !== -1) setCurrentIdx(idx);
+  };
 
   // Restore state from LocalStorage on mount
   useEffect(() => {
@@ -91,15 +108,17 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
             const stored = localStorage.getItem(key);
             if (stored) {
               const data = JSON.parse(stored);
-              const startTime = data.startTime || Date.now();
-              const elapsed = Math.floor((Date.now() - startTime) / 1000);
-              const remaining = (60 * 10) - elapsed;
+              const sessionStartTime = data.startTime || Date.now();
+              setStartTime(sessionStartTime);
+              const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+              const remaining = defaultTime - elapsed;
 
               if (remaining <= 0) {
                   // Session expired, clear it and start fresh
                   localStorage.removeItem(key);
                   const newSession = { startTime: Date.now(), answers: {}, marked: {} };
                   localStorage.setItem(key, JSON.stringify(newSession));
+                  setStartTime(newSession.startTime);
                   // We don't verify old answers if expired
               } else {
                   // Restore valid session
@@ -177,7 +196,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
               console.error("Polling error", e);
           }
       }, 1000); 
-
+ 
       return () => clearInterval(interval);
   }, [duelId, currentIdx, answers]);
   
@@ -431,7 +450,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
               score: res.score,
               totalQuestions: questions.length,
               correctAnswers: res.correct,
-              timeTaken: (60 * 10) - initialTime,
+              timeTaken: Math.max(0, Math.floor((Date.now() - startTime) / 1000)),
               timestamp: new Date().toISOString(),
               duelId 
             }),
@@ -599,7 +618,7 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
                <div class="text-6xl font-bold text-blue-400">{result.score}/{questions.length}</div>
                <div class="flex justify-center gap-4">
                  <a href="/" class="px-6 py-2 bg-gray-700 rounded">Home</a>
-                 <button type="button" onClick={() => { localStorage.removeItem(`quiz_session_${category}`); window.location.reload(); }} class="px-6 py-2 bg-blue-600 rounded">Retry</button>
+                 <button type="button" onClick={() => { localStorage.removeItem(`quiz_session_${category}`); location.reload(); }} class="px-6 py-2 bg-blue-600 rounded">Retry</button>
                </div>
             </div>
             
@@ -615,37 +634,68 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
       <div class="flex-1 space-y-6">
         
         {/* Header / HUD */}
-        <div class="flex justify-between items-center p-4 bg-gray-800/80 backdrop-blur border border-gray-700 rounded-xl">
-          <div>
-            <h2 class="text-xl font-bold text-gray-100 uppercase tracking-wider">
-              {category} {duelId ? `Duel (${variant})` : "Mock Test"}
-            </h2>
-            <span class="text-sm text-gray-400">
-               Q{currentIdx + 1}/{questions.length}
-            </span>
-          </div>
-          
-          {duelId ? (
-              <div class="flex gap-8 font-mono text-xl font-bold items-center">
-                  <div class="flex flex-col items-center">
-                       <span class={`text-2xl ${duelTimeLeft < 10 ? "text-red-500 animate-pulse" : "text-white"}`}>{duelTimeLeft}s</span>
-                       <span class="text-xs text-gray-500">Timer</span>
-                  </div>
-                  <div class="h-8 w-px bg-gray-600"></div>
-                  <div class="text-blue-400">P1: {duelState.p1Score}</div>
-                  <div class="text-emerald-400">P2: {duelState.p2Score}</div>
-                  <div class="h-8 w-px bg-gray-600"></div>
-                  <button
-                    type="button"
-                    onClick={() => setShowExitConfirm(true)}
-                    class="px-4 py-1.5 bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-                  >
-                    Exit
-                  </button>
-              </div>
-          ) : (
-              <Timer key={initialTime} initialSeconds={initialTime} onTimeUp={handleSubmit} />
-          )}
+        <div class="p-4 bg-gray-800/80 backdrop-blur border border-gray-700 rounded-xl space-y-4">
+           {/* Timer and Title Row */}
+           <div class="flex justify-between items-center">
+             <div>
+               <h2 class="text-xl font-bold text-gray-100 uppercase tracking-wider">
+                 {category} {duelId ? `Duel (${variant})` : "Mock Test"}
+               </h2>
+               <div class="text-sm text-gray-400 flex items-center gap-3">
+                  <span>Q{currentIdx + 1}/{questions.length}</span>
+                  {!duelId && sections.length > 1 && (
+                      <span class="px-2 py-0.5 rounded bg-gray-700 text-xs uppercase font-bold text-blue-300">
+                        {currentSection.replace(/_/g, " ")}
+                      </span>
+                  )}
+               </div>
+             </div>
+             
+             {duelId ? (
+                 <div class="flex gap-8 font-mono text-xl font-bold items-center">
+                     <div class="flex flex-col items-center">
+                          <span class={`text-2xl ${duelTimeLeft < 10 ? "text-red-500 animate-pulse" : "text-white"}`}>{duelTimeLeft}s</span>
+                          <span class="text-xs text-gray-500">Timer</span>
+                     </div>
+                     <div class="h-8 w-px bg-gray-600"></div>
+                     <div class="text-blue-400">P1: {duelState.p1Score}</div>
+                     <div class="text-emerald-400">P2: {duelState.p2Score}</div>
+                     <div class="h-8 w-px bg-gray-600"></div>
+                     <button
+                       type="button"
+                       onClick={() => setShowExitConfirm(true)}
+                       class="px-4 py-1.5 bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                     >
+                       Exit
+                     </button>
+                 </div>
+             ) : (
+                 <Timer key={initialTime} initialSeconds={initialTime} onTimeUp={handleSubmit} />
+             )}
+           </div>
+
+           {/* Section Tabs (Non-Duel Only) */}
+           {!duelId && sections.length > 1 && (
+               <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 border-t border-gray-700 pt-3">
+                   {sections.map(sec => {
+                       const isActive = currentSection === sec;
+                       return (
+                           <button
+                             type="button"
+                             key={sec}
+                             onClick={() => jumpToSection(sec)}
+                             class={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all border ${
+                                 isActive 
+                                 ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/50" 
+                                 : "bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                             }`}
+                           >
+                             {sec.replace(/_/g, " ").toUpperCase()}
+                           </button>
+                       )
+                   })}
+               </div>
+           )}
         </div>
 
         {/* Question Card */}
@@ -794,8 +844,17 @@ export default function QuizEngine({ questions, category, duelId, variant = "STA
                    </div>
                  </div>
              ) : (
-                <div class="flex gap-4 w-full justify-between">
-                     <button type="button" onClick={_handlePrev} disabled={currentIdx===0} class="px-6 py-2 bg-gray-700 rounded-lg">Previous</button>
+                <div class="flex gap-4 w-full justify-between items-center">
+                     <button type="button" onClick={_handlePrev} disabled={currentIdx===0} class="px-6 py-2 bg-gray-700 rounded-lg disabled:opacity-50">Previous</button>
+                     
+                     <button 
+                        type="button" 
+                        onClick={toggleMarked} 
+                        class={`px-4 py-2 rounded-lg font-medium transition-colors ${marked[currentIdx] ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                     >
+                        {marked[currentIdx] ? '★ Unmark' : '☆ Mark'}
+                     </button>
+
                      <button type="button" onClick={isLast ? handleSubmit : handleNext} class="px-8 py-2 bg-blue-600 rounded-lg text-white font-bold">{isLast ? "Submit" : "Next"}</button>
                 </div>
              )}

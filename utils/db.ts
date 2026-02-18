@@ -156,6 +156,20 @@ export async function getQuestions(category?: string, subject?: string): Promise
   }
 }
 
+export async function getMockTestQuestions(
+  category: string,
+  distribution: Record<string, number>
+): Promise<Question[]> {
+  const combinedQuestions: Question[] = [];
+
+  for (const [subjectId, count] of Object.entries(distribution)) {
+    const questions = await getRandomQuestions(category, count, subjectId);
+    combinedQuestions.push(...questions);
+  }
+
+  return combinedQuestions;
+}
+
 export async function getRandomQuestions(
   category: string,
   count: number,
